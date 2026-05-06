@@ -20,8 +20,7 @@ function criarElementoPostagem(conteudo) {
     const novaPostagem = document.createElement('div');
     novaPostagem.classList.add('postagem'); 
     
-    // Repare que o botão de curtir aqui também já vem com o span do contador
-    novaPostagem.innerHTML = `
+   novaPostagem.innerHTML = `
         <p class="autor">
             <strong>@NovoLeitor</strong> 
             <span class="badge badge-acolhedor">🌟 Novo</span>
@@ -30,7 +29,16 @@ function criarElementoPostagem(conteudo) {
         <p>${conteudo}</p>
         <div class="acoes-post">
             <button class="botao-verde btn-curtir">💖 <span class="contador">0</span></button>
-            <button class="botao-verde">💬 Comentar</button>
+            <button class="botao-verde btn-abrir-comentarios">💬 Comentar</button>
+        </div>
+        
+        <!-- NOVA ÁREA DE COMENTÁRIOS (Invisível no começo) -->
+        <div class="area-comentarios">
+            <div class="lista-comentarios"></div>
+            <div class="caixa-escrever-comentario">
+                <input type="text" class="input-comentario" placeholder="Escreva sua resposta...">
+                <button class="botao-verde btn-enviar-comentario">Enviar</button>
+            </div>
         </div>
     `;
     
@@ -91,6 +99,43 @@ feedPrincipal.addEventListener('click', function(event) {
         // Pega o número atual, soma 1 e devolve pra tela
         let curtidasAtuais = parseInt(spanContador.innerText);
         spanContador.innerText = curtidasAtuais + 1;
+    }
+    // ... (Lógica do curtir já existente acima disso) ...
+
+    // LÓGICA 2: ABRIR/FECHAR A ÁREA DE COMENTÁRIOS
+    const btnAbrir = event.target.closest('.btn-abrir-comentarios');
+    if (btnAbrir) {
+        const postagemAtual = btnAbrir.closest('.postagem'); // Acha a postagem dona do botão
+        const areaComentarios = postagemAtual.querySelector('.area-comentarios');
+        
+        // Se estiver escondido, mostra. Se estiver aparecendo, esconde (Efeito Toggle)
+        if (areaComentarios.style.display === 'block') {
+            areaComentarios.style.display = 'none';
+        } else {
+            areaComentarios.style.display = 'block';
+        }
+    }
+
+    // LÓGICA 3: ENVIAR O COMENTÁRIO
+    const btnEnviar = event.target.closest('.btn-enviar-comentario');
+    if (btnEnviar) {
+        const postagemAtual = btnEnviar.closest('.postagem');
+        const inputComentario = postagemAtual.querySelector('.input-comentario');
+        const textoComentario = inputComentario.value;
+
+        // Só cria o comentário se a pessoa digitou algo
+        if (textoComentario.trim() !== '') {
+            const listaDeComentarios = postagemAtual.querySelector('.lista-comentarios');
+            
+            // Cria a div do comentário novo
+            const novoComentario = document.createElement('div');
+            novoComentario.classList.add('comentario');
+            novoComentario.innerHTML = `<strong>@Visitante:</strong> ${textoComentario}`;
+            
+            // Injeta o comentário na lista e limpa o campo de texto
+            listaDeComentarios.appendChild(novoComentario);
+            inputComentario.value = ''; 
+        }
     }
 });
 

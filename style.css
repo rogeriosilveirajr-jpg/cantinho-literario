@@ -139,3 +139,34 @@ header {
 .badge-trocador { background-color: #27ae60; }
 
 .em-alta ol { padding-left: 20px; margin-top: 15px; line-height: 1.8; }
+/* ==========================================
+   ÁREA DE COMENTÁRIOS
+   ========================================== */
+.area-comentarios {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    display: none; /* Começa escondida para não poluir a tela */
+}
+
+.comentario {
+    background-color: #f0f2f5;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.caixa-escrever-comentario {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.caixa-escrever-comentario input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+}
