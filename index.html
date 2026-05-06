@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cantinho Literário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- CABEÇALHO SUPERIOR -->
+    <header>
+        <div class="logo">
+            <h2>Cantinho Literário</h2>
+        </div>
+        <div class="menu-topo-direito">
+            <button id="btn-notificacoes" class="icone-topo">🔔 Notificações</button>
+            <button id="btn-configuracoes" class="icone-topo">⚙️ Configurações</button>
+        </div>
+    </header>
+
+    <!-- ÁREA DE DESTAQUE COM IMAGEM DE FUNDO -->
+    <section class="area-destaque">
+        <div class="caixa-transparente">
+            <h1>Bem-vindo ao Cantinho Literário</h1>
+            <p>Um espaço dedicado para você compartilhar suas experiências, trocar ideias e encontrar sua próxima grande leitura.</p>
+            <button id="btn-destaque" class="botao-verde">Ver Experiências</button>
+        </div>
+    </section>
+
+    <!-- ÁREA PRINCIPAL DO SITE -->
+    <main class="sessao-conteudo">
+        
+        <!-- Coluna Esquerda: Estante Virtual e Menu -->
+        <aside class="menu-lateral">
+            <div class="perfil-mini">
+                <div class="foto-perfil">👤</div>
+                <h4>Meu Perfil</h4>
+                <div class="estante-virtual">
+                    <p>📖 <strong>Lendo:</strong> O Hobbit</p>
+                    <p>⭐ <strong>Favorito:</strong> Drácula</p>
+                    <p>🎯 <strong>Quero Ler:</strong> Duna</p>
+                </div>
+            </div>
+            
+            <hr class="divisor">
+
+            <ul>
+                <li><button id="btn-inicio" class="botao-lateral">🏠 Início</button></li>
+                <li><button id="btn-trocas" class="botao-lateral">🤝 Minhas Trocas</button></li>
+            </ul>
+        </aside>
+
+        <!-- Coluna Central: Feed -->
+        <section class="feed-principal">
+            
+            <div class="filtros-tematicos">
+                <button class="filtro-clube ativo">Todos</button>
+                <button class="filtro-clube">Fantasia & Aventura</button>
+                <button class="filtro-clube">Mangás</button>
+                <button class="filtro-clube">Terror Gótico</button>
+            </div>
+
+            <!-- Caixa de Criação de Postagem -->
+            <div class="criar-postagem">
+                <textarea id="caixa-post" rows="3" placeholder="Carregando pergunta..."></textarea>
+                <div class="rodape-post">
+                    
+                    <!-- ⚠️ AQUI ESTÁ A ALTERAÇÃO: O id="btn-publicar" foi adicionado neste botão abaixo para o JavaScript conseguir achá-lo -->
+                    <button id="btn-publicar" class="botao-verde">Publicar</button>
+                    
+                </div>
+            </div>
+
+            <!-- Postagem 1 -->
+            <div class="postagem">
+                <p class="autor">
+                    <strong>@LeitorNoturno</strong> 
+                    <span class="badge badge-acolhedor">🌟 Acolhedor</span>
+                    • há 2 horas
+                </p>
+                <p>Acabei de reler <em>Drácula</em>, do Bram Stoker. A forma como a história é contada através de cartas e diários cria uma atmosfera gótica incrível. É impossível não sentir a tensão crescendo a cada página! Alguém mais é fã desse formato epistolar?</p>
+                <div class="acoes-post">
+                    <!-- No post do @LeitorNoturno -->
+                 <button class="botao-verde btn-curtir">💖 <span class="contador">12</span></button>
+                 <button class="botao-verde btn-curtir">🤝 <span class="contador">0</span> Propor Troca</button>
+                </div>
+            </div>
+
+            <!-- Postagem 2 -->
+            <div class="postagem">
+                <p class="autor">
+                    <strong>@AventureiroBR</strong> 
+                    <span class="badge badge-trocador">🤝 Trocador Confiável</span>
+                    • há 5 horas
+                </p>
+                <p><strong>Ofereço:</strong> Box O Senhor dos Anéis (Edição capa dura, seminovo)<br>
+                <strong>Busco:</strong> Mangás de aventura ou fantasia (preferência por coleções fechadas).</p>
+                <div class="acoes-post">
+                    <button class="botao-verde">🤝 Propor Troca</button>
+                    <button class="botao-verde">💬 Perguntar</button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Coluna Direita: Em Alta -->
+        <aside class="em-alta">
+            <h3>Em Alta na Comunidade</h3>
+            <ol>
+                <li>O Senhor dos Anéis</li>
+                <li>Clean Code</li>
+                <li>Drácula</li>
+            </ol>
+        </aside>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
