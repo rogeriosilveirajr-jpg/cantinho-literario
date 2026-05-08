@@ -1,172 +1,445 @@
-/* ===================================================
-   CANTINHO LITERÁRIO - FOLHA DE ESTILOS PRINCIPAL
-=================================================== */
-
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-body { background-color: #f4f4f9; color: #333; }
-
-/* ---------------------------------------------------
-   CABEÇALHO
---------------------------------------------------- */
-header {
-    background-color: rgb(128, 128, 0); 
-    padding: 15px 30px; color: white; display: flex;
-    justify-content: space-between; align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-.menu-topo-direito { display: flex; gap: 20px; }
-.icone-topo {
-    background: none; border: none; color: white;
-    font-size: 1rem; cursor: pointer; font-weight: bold;
-    transition: opacity 0.3s;
-}
-.icone-topo:hover { opacity: 0.8; }
-
-/* ---------------------------------------------------
-   ÁREA DE DESTAQUE SUPERIOR
---------------------------------------------------- */
-.area-destaque {
-    background-image: url('fundo.jpg'); /* Adicione sua imagem! */
-    background-size: cover; background-position: center; 
-    padding: 100px 20px; display: flex;
-    justify-content: center; align-items: center;
-}
-.caixa-transparente {
-    background-color: rgba(128, 128, 0, 0.30); 
-    padding: 40px; border-radius: 12px; max-width: 600px; text-align: center;
-}
-.caixa-transparente h1, .caixa-transparente p {
-    color: #ffffff; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.85); 
-}
-.caixa-transparente h1 { font-size: 2.5rem; margin-bottom: 15px; }
-.caixa-transparente p { font-size: 1.2rem; line-height: 1.5; margin-bottom: 25px; }
-
-/* ---------------------------------------------------
-   BOTÕES GERAIS
---------------------------------------------------- */
-.botao-verde {
-    display: inline-block; background-color: rgb(128, 128, 0); 
-    color: white; padding: 10px 20px; text-decoration: none;
-    border-radius: 6px; font-weight: bold; border: none; 
-    cursor: pointer; font-size: 0.95rem; transition: background-color 0.3s; 
-}
-.botao-verde:hover { background-color: rgb(100, 100, 0); }
-
-/* ---------------------------------------------------
-   ESTRUTURA DO CONTEÚDO (FLEXBOX)
---------------------------------------------------- */
-.sessao-conteudo {
-    display: flex; gap: 20px; max-width: 1200px;
-    margin: 40px auto; padding: 0 20px;
-}
-.menu-lateral, .em-alta {
-    flex: 1; background-color: white; padding: 20px;
-    border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: fit-content;
-}
-.feed-principal { flex: 2; }
-
-/* ---------------------------------------------------
-   ESTANTE VIRTUAL (PERFIL MINI) E MENU LATERAL
---------------------------------------------------- */
-.perfil-mini { text-align: center; margin-bottom: 15px; }
-.foto-perfil {
-    font-size: 3rem; background-color: #eee;
-    border-radius: 50%; width: 80px; height: 80px;
-    line-height: 80px; margin: 0 auto 10px auto;
-}
-.estante-virtual {
-    text-align: left; background-color: #fcfcfc;
-    border: 1px solid #eaeaea; padding: 15px;
-    border-radius: 6px; margin-top: 15px; font-size: 0.9rem;
-}
-.estante-virtual p { margin-bottom: 8px; }
-.divisor { border: 0; height: 1px; background: #eee; margin: 20px 0; }
-
-.menu-lateral ul { list-style: none; }
-.menu-lateral li { margin-bottom: 10px; }
-.botao-lateral {
-    background: none; border: none; color: #333;
-    font-size: 1.1rem; font-weight: bold; cursor: pointer;
-    width: 100%; text-align: left; padding: 10px;
-    border-radius: 6px; transition: background-color 0.3s;
-}
-.botao-lateral:hover { background-color: #f4f4f9; color: rgb(128, 128, 0); }
-
-/* ---------------------------------------------------
-   FILTROS DE CLUBES TEMÁTICOS E CRIAÇÃO DE POST
---------------------------------------------------- */
-.filtros-tematicos { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-.filtro-clube {
-    background-color: white; border: 1px solid rgb(128, 128, 0);
-    color: rgb(128, 128, 0); padding: 8px 15px; border-radius: 20px;
-    font-weight: bold; cursor: pointer; transition: all 0.3s;
-}
-.filtro-clube:hover, .filtro-clube.ativo {
-    background-color: rgb(128, 128, 0); color: white;
-}
-
-.criar-postagem {
-    background-color: white; padding: 20px; border-radius: 8px;
-    margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-.criar-postagem textarea {
-    width: 100%; padding: 15px; border: 1px solid #ccc;
-    border-radius: 6px; resize: vertical; font-size: 1rem;
-    font-family: inherit;
-}
-.criar-postagem textarea:focus {
-    outline: none; border-color: rgb(128, 128, 0);
-}
-.rodape-post { display: flex; justify-content: flex-end; margin-top: 10px; }
-
-/* ---------------------------------------------------
-   POSTAGENS DO FEED E EMBLEMAS (BADGES)
---------------------------------------------------- */
-.postagem {
-    background-color: white; padding: 20px; border-radius: 8px;
-    margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-.postagem .autor { color: #666; margin-bottom: 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-.postagem p { line-height: 1.5; margin-bottom: 15px; }
-.acoes-post { display: flex; gap: 10px; }
-
-/* EMBLEMAS */
-.badge {
-    padding: 3px 8px; border-radius: 12px; font-size: 0.75rem;
-    font-weight: bold; color: white;
-}
-.badge-acolhedor { background-color: #f39c12; }
-.badge-trocador { background-color: #27ae60; }
-
-.em-alta ol { padding-left: 20px; margin-top: 15px; line-height: 1.8; }
 /* ==========================================
-   ÁREA DE COMENTÁRIOS
+   RESET BÁSICO E TIPOGRAFIA
    ========================================== */
-.area-comentarios {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #ddd;
-    display: none; /* Começa escondida para não poluir a tela */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.comentario {
-    background-color: #f0f2f5;
+body { 
+    /* Colocamos a cor verde original (#f0f7f0) com 88% de opacidade por cima da imagem */
+    background-image: linear-gradient(rgba(240, 247, 240, 0.88), rgba(240, 247, 240, 0.88)), 
+                      url('fundo.jpg');
+    background-size: cover;
+    background-attachment: fixed; /* Isso faz a imagem ficar parada enquanto você rola o site para baixo */
+    background-position: center;
+    color: #333; 
+}
+/* ==========================================
+   CABEÇALHO PRINCIPAL
+   ========================================== */
+.cabecalho-principal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: white;
+    border-bottom: 1px solid #edf2f0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.logo h2 {
+    color: #2E7D32;
+    font-family: 'Playfair Display', serif;
+    margin: 0;
+}
+
+.logo span { 
+    color: #81C784; 
+}
+
+.menu-topo-direito {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-icone-header {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    position: relative;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icone-header:hover { 
+    background-color: #f0f7f0; 
+}
+
+#badge-notificacao {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #e53935;
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 5px;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.btn-sair { 
+    padding: 8px 15px; 
+    font-size: 0.9rem; 
+    margin-left: 5px; 
+    white-space: nowrap; 
+}
+
+/* ==========================================
+   ÁREA DE DESTAQUE (VERSÃO FINAL E TESTADA)
+   ========================================== */
+.area-destaque {
+    height: 300px;
+    /* Imagem confirmada de biblioteca com o gradiente escuro profissional */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                      url('fundo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Efeito Parallax */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.caixa-transparente {
+    background-color: rgba(255, 255, 255, 0.1); /* Mais sutil */
+    backdrop-filter: blur(10px); /* Vidro fosco moderno */
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    max-width: 800px;
+}
+
+.caixa-transparente h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+}
+
+.caixa-transparente p {
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+/* ==========================================
+   LAYOUT PRINCIPAL E GRID
+   ========================================== */
+.sessao-conteudo {
+    display: grid;
+    grid-template-columns: 250px 1fr 250px;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+    align-items: start;
+}
+
+/* ==========================================
+   NAVEGAÇÃO LATERAL (MENU ESQUERDO)
+   ========================================== */
+.menu-lateral {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.item-menu-navegacao {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
     padding: 10px;
     border-radius: 8px;
-    margin-bottom: 10px;
-    font-size: 0.9em;
+    transition: 0.2s;
+    background-color: white;
+    border: 1px solid #edf2f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.caixa-escrever-comentario {
+.item-menu-navegacao:hover { 
+    border-color: #81C784; 
+}
+
+.mini-foto-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #e0e0e0;
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
 }
 
-.caixa-escrever-comentario input {
-    flex: 1;
-    padding: 8px;
+.menu-ativo { 
+    text-align: left; 
+    background-color: #2E7D32; 
+    color: white; 
+}
+
+.menu-inativo { 
+    text-align: left; 
+    background-color: transparent; 
+    color: #2E7D32; 
+    border: 1px solid #81C784; 
+}
+
+/* ==========================================
+   ÁREA CENTRAL (FEED E POSTAGEM)
+   ========================================== */
+.criar-postagem, .postagem {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: inherit;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.botao-verde {
+    background-color: #2E7D32;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.botao-verde:hover { 
+    background-color: #1b5e20; 
+}
+
+.botao-verde:disabled { 
+    background-color: #a5d6a7; 
+    cursor: not-allowed; 
+}
+
+.filtros-tematicos { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 20px; 
+}
+
+.filtro-clube {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: white;
+    color: #555;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.filtro-clube.ativo { 
+    background-color: #81C784; 
+    color: white; 
+}
+
+/* ==========================================
+   TELA DE PERFIL E ESTANTE
+   ========================================== */
+.foto-grande-container {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #81C784;
+    background: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+}
+
+.item-estante-perfil {
+    background: #f9fbf9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid #edf2f0;
+}
+
+.icone-grande { font-size: 24px; }
+.label-estante { font-size: 0.8em; color: #888; }
+.label-form { font-size: 0.9em; color: #555; font-weight: bold; margin-top: 10px; display: block; }
+
+/* ==========================================
+   COLUNA DIREITA (TENDÊNCIAS)
+   ========================================== */
+.em-alta { 
+    background-color: white; 
+    padding: 20px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+}
+
+/* ==========================================
+   RODAPÉ (FOOTER) ESTILO DARK MODERNO
+   ========================================== */
+.rodape-site {
+    background-color: #1b5e20; /* Fundo cinza bem escuro, idêntico à imagem */
+    color: #b3b3b3;
+    padding: 40px 20px;
+    margin-top: 50px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.rodape-conteudo {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+}
+
+.rodape-logo h3 {
+    color: #ffffff; /* Título em branco para dar destaque */
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Força a fonte sem serifa */
+}
+
+.rodape-logo p {
+    color: #cccccc;
+    font-size: 1rem;
+}
+
+.rodape-divisor {
+    width: 100%;
+    border: none;
+    height: 1px;
+    background-color: #333333; /* Linha divisória bem sutil */
+    margin: 5px 0;
+}
+
+.rodape-links {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    padding: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.rodape-links li a {
+    color: #cccccc;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.rodape-links li a:hover {
+    color: #ffffff;
+}
+
+.rodape-creditos {
+    font-size: 0.9rem;
+    color: #999999;
+    line-height: 1.8;
+}
+/* ==========================================
+   ✨ MICRO-INTERAÇÕES E UX (NOVO)
+   ========================================== */
+
+/* 1. Efeito de flutuação suave nas postagens (Hover) */
+.postagem {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.postagem:hover {
+    transform: translateY(-3px); /* Levanta a postagem 3 pixels */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08); /* Aumenta a sombra */
+}
+
+/* 2. Animação de batida de coração para as curtidas */
+@keyframes pulsarCoracao {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.animacao-pulsar {
+    animation: pulsarCoracao 0.3s ease-in-out;
+}
+/* ==========================================
+   📱 RESPONSIVIDADE (TELEMÓVEIS E TABLETS)
+   ========================================== */
+@media (max-width: 900px) {
+    /* 1. Transforma as 3 colunas laterais em apenas 1 coluna empilhada */
+    .sessao-conteudo {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+    }
+
+    /* 2. O menu lateral transforma-se numa barra de navegação horizontal no topo */
+    .menu-lateral {
+        flex-direction: row;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .item-menu-navegacao, #btn-menu-feed {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    /* 3. Ajusta o tamanho da imagem da biblioteca e do texto de boas-vindas */
+    .area-destaque {
+        height: 220px;
+        margin-bottom: 20px;
+    }
+
+    .caixa-transparente {
+        padding: 15px;
+        margin: 0 10px;
+    }
+
+    .caixa-transparente h1 {
+        font-size: 1.8rem;
+    }
+
+    .caixa-transparente p {
+        font-size: 0.9rem;
+    }
+
+    /* 4. Esconde a coluna "Em Alta" no telemóvel para não poluir o ecrã e focar no feed */
+    .em-alta {
+        display: none;
+    }
+    
+    /* 5. Ajusta os botões do cabeçalho */
+    .logo h2 {
+        font-size: 1.4rem;
+    }
 }

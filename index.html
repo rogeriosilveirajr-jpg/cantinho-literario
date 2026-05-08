@@ -4,110 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cantinho Literário</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- CABEÇALHO SUPERIOR -->
-    <header>
+    <header class="cabecalho-principal">
         <div class="logo">
-            <h2>Cantinho Literário</h2>
+            <h2>🖋️ Cantinho <span>Literário</span></h2>
         </div>
+
         <div class="menu-topo-direito">
-            <button id="btn-notificacoes" class="icone-topo">🔔 Notificações</button>
-            <button id="btn-configuracoes" class="icone-topo">⚙️ Configurações</button>
+            <button id="btn-notificacoes" class="btn-icone-header" title="Notificações">
+                🔔 <span id="badge-notificacao" style="display: none;">0</span>
+            </button>
+
+            <button id="btn-configuracoes-perfil" class="btn-icone-header" title="Configurações">
+                ⚙️
+            </button>
+
+            <button id="btn-sair-sessao" class="botao-verde btn-sair" style="display: none;">
+                🚪 Sair
+            </button>
         </div>
     </header>
 
-    <!-- ÁREA DE DESTAQUE COM IMAGEM DE FUNDO -->
-    <section class="area-destaque">
-        <div class="caixa-transparente">
-            <h1>Bem-vindo ao Cantinho Literário</h1>
-            <p>Um espaço dedicado para você compartilhar suas experiências, trocar ideias e encontrar sua próxima grande leitura.</p>
-            <button id="btn-destaque" class="botao-verde">Ver Experiências</button>
-        </div>
-    </section>
-
-    <!-- ÁREA PRINCIPAL DO SITE -->
     <main class="sessao-conteudo">
         
-        <!-- Coluna Esquerda: Estante Virtual e Menu -->
         <aside class="menu-lateral">
-            <div class="perfil-mini">
-                <div class="foto-perfil">👤</div>
-                <h4>Meu Perfil</h4>
-                <div class="estante-virtual">
-                    <p>📖 <strong>Lendo:</strong> O Hobbit</p>
-                    <p>⭐ <strong>Favorito:</strong> Drácula</p>
-                    <p>🎯 <strong>Quero Ler:</strong> Duna</p>
+            <div id="btn-menu-perfil" class="item-menu-navegacao">
+                <div class="mini-foto-container">
+                    <img id="mini-foto-sidebar" src="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                    <span id="mini-foto-padrao">👤</span>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <strong id="mini-nome-sidebar" style="color: #2E7D32; line-height: 1.2;">Visitante</strong>
+                    <span id="saudacao-dinamica" style="font-size: 0.75rem; color: #888; font-style: italic;">Olá, leitor!</span>
                 </div>
             </div>
-            
-            <hr class="divisor">
 
-            <ul>
-                <li><button id="btn-inicio" class="botao-lateral">🏠 Início</button></li>
-                <li><button id="btn-trocas" class="botao-lateral">🤝 Minhas Trocas</button></li>
-            </ul>
+            <button id="btn-menu-feed" class="botao-verde menu-ativo">🏠 Feed Principal</button>
         </aside>
 
-        <!-- Coluna Central: Feed -->
         <section class="feed-principal">
             
-            <div class="filtros-tematicos">
-                <button class="filtro-clube ativo">Todos</button>
-                <button class="filtro-clube">Fantasia & Aventura</button>
-                <button class="filtro-clube">Mangás</button>
-                <button class="filtro-clube">Terror Gótico</button>
-            </div>
+            <div id="tela-feed">
+                <div class="filtros-tematicos">
+                    <button id="aba-feed" class="filtro-clube ativo">📖 Resenhas</button>
+                    <button id="aba-trocas" class="filtro-clube">📦 Trocas & Doações</button>
+                </div>
 
-            <!-- Caixa de Criação de Postagem -->
-            <div class="criar-postagem">
-                <textarea id="caixa-post" rows="3" placeholder="Carregando pergunta..."></textarea>
-                <div class="rodape-post">
+                <div id="area-login" class="criar-postagem" style="text-align: center;">
+                    <h2 style="color: #2E7D32; margin-bottom: 15px; font-family: 'Playfair Display', serif;">Bem-vindo(a) ao Cantinho</h2>
+                    <input type="email" id="email-login" placeholder="Seu e-mail">
+                    <input type="password" id="senha-login" placeholder="Sua senha">
+
+                    <div id="campos-cadastro" style="display:none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                        <input type="text" id="cadastro-username" placeholder="Nome de usuário (ex: @Leitor_SC)">
+                        <textarea id="cadastro-bio" rows="2" placeholder="Sua bio de leitor (ex: Fã de terror gótico e aventura)"></textarea>
+                        <div style="text-align: left; font-size: 0.85rem;">
+                            <label style="color: #2E7D32; font-weight: bold;">📸 Foto de perfil (Opcional):</label>
+                            <input type="file" id="cadastro-foto" accept="image/*" style="border:none; padding:0; margin-top: 5px;">
+                        </div>
+                    </div>
                     
-                    <!-- ⚠️ AQUI ESTÁ A ALTERAÇÃO: O id="btn-publicar" foi adicionado neste botão abaixo para o JavaScript conseguir achá-lo -->
-                    <button id="btn-publicar" class="botao-verde">Publicar</button>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                        <button id="btn-entrar" class="botao-verde">Entrar</button>
+                        <button id="btn-mostrar-cadastro" class="botao-verde" style="background-color: #777;">Criar Nova Conta</button>
+                        <button id="btn-executar-cadastro" class="botao-verde" style="display:none; background-color: #2E7D32;">Finalizar Cadastro</button>
+                    </div>
+                </div>
+
+                <div id="area-postagem" class="criar-postagem" style="display: none;">
+                    <input type="text" id="nome-usuario" placeholder="Seu nome" readonly style="background-color: #eee; cursor: not-allowed; font-weight: bold; color: #2E7D32;">
+                    <input type="text" id="localizacao-usuario" placeholder="Sua cidade e estado (ex: Joinville-SC)" style="display: none;">
+                    <textarea id="texto-comentario" rows="3" placeholder="Compartilhe uma resenha literária com a comunidade..."></textarea>
                     
+                    <div id="area-foto" style="display: none; margin-bottom: 15px; padding: 10px; background-color: #f9fbf9; border-radius: 8px; border: 1px dashed #81C784;">
+                        <label style="font-size: 0.9rem; color: #2E7D32; font-weight: bold; display: block; margin-bottom: 5px;">📷 Adicionar foto do livro:</label>
+                        <input type="file" id="foto-livro" accept="image/*" style="border: none; padding: 0; background: none; margin: 0;">
+                    </div>
+
+                    <div class="rodape-post">
+                        <button id="btn-enviar" class="botao-verde">Publicar</button>
+                    </div>
                 </div>
+
+                <div id="lista-comentarios" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;"></div>
             </div>
 
-            <!-- Postagem 1 -->
-            <div class="postagem">
-                <p class="autor">
-                    <strong>@LeitorNoturno</strong> 
-                    <span class="badge badge-acolhedor">🌟 Acolhedor</span>
-                    • há 2 horas
-                </p>
-                <p>Acabei de reler <em>Drácula</em>, do Bram Stoker. A forma como a história é contada através de cartas e diários cria uma atmosfera gótica incrível. É impossível não sentir a tensão crescendo a cada página! Alguém mais é fã desse formato epistolar?</p>
-                <div class="acoes-post">
-                    <!-- No post do @LeitorNoturno -->
-                 <button class="botao-verde btn-curtir">💖 <span class="contador">12</span></button>
-                 <button class="botao-verde btn-curtir">🤝 <span class="contador">0</span> Propor Troca</button>
+            <div id="tela-perfil" style="display: none; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+                
+                <div class="foto-grande-container">
+                    <img id="perfil-foto-grande" src="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                    <span id="perfil-foto-padrao-grande">👤</span>
                 </div>
-            </div>
+                
+                <h2 id="perfil-nome-grande" style="color: #2E7D32; margin-bottom: 10px;">@Visitante</h2>
+                <p id="perfil-bio-grande" style="color: #666; font-style: italic; margin-bottom: 20px;">Faça login para ver seu perfil completo.</p>
+                
+                <button id="btn-abrir-edicao" class="botao-verde" style="background-color: transparent; color: #2E7D32; border: 1px solid #81C784; margin-bottom: 20px;">⚙️ Editar Estante</button>
 
-            <!-- Postagem 2 -->
-            <div class="postagem">
-                <p class="autor">
-                    <strong>@AventureiroBR</strong> 
-                    <span class="badge badge-trocador">🤝 Trocador Confiável</span>
-                    • há 5 horas
-                </p>
-                <p><strong>Ofereço:</strong> Box O Senhor dos Anéis (Edição capa dura, seminovo)<br>
-                <strong>Busco:</strong> Mangás de aventura ou fantasia (preferência por coleções fechadas).</p>
-                <div class="acoes-post">
-                    <button class="botao-verde">🤝 Propor Troca</button>
-                    <button class="botao-verde">💬 Perguntar</button>
+                <hr style="border: 0; height: 1px; background: #edf2f0; margin: 20px 0;">
+                
+                <div id="visualizacao-estante" class="estante-virtual" style="text-align: left;">
+                    <h3 style="color: #2E7D32; margin-bottom: 15px; font-family: 'Playfair Display', serif;">📚 Minha Estante</h3>
+                    <div class="item-estante-perfil">
+                        <div class="icone-grande">📖</div>
+                        <div><span class="label-estante">Lendo Agora</span><br><strong id="txt-lendo-agora">Viagem ao Centro da Terra</strong></div>
+                    </div>
+                    <div class="item-estante-perfil">
+                        <div class="icone-grande">⭐</div>
+                        <div><span class="label-estante">Favorito</span><br><strong id="txt-favorito">Drácula</strong></div>
+                    </div>
+                    <div class="item-estante-perfil">
+                        <div class="icone-grande">🎯</div>
+                        <div><span class="label-estante">Próxima Leitura</span><br><strong id="txt-proxima-leitura">O Hobbit</strong></div>
+                    </div>
                 </div>
+
+               <div id="formulario-estante" style="display: none; text-align: left; background: #f9fbf9; padding: 20px; border-radius: 12px; border: 1px solid #81C784;">
+                    <h3 style="color: #2E7D32; margin-bottom: 15px;">📝 Editar Meu Perfil</h3>
+                    
+                    <label class="label-form" style="margin-top: 0;">📸 Alterar Foto de Perfil:</label>
+                    <input type="file" id="edit-foto-perfil" accept="image/*" style="border:none; padding:0; margin-top: 5px; margin-bottom: 15px;">
+
+                    <label class="label-form">Nome de Usuário:</label>
+                    <input type="text" id="edit-username" placeholder="Seu @nome">
+
+                    <label class="label-form">Sua Bio:</label>
+                    <textarea id="edit-bio" rows="2" placeholder="Escreva um pouco sobre você..."></textarea>
+
+                    <hr style="border: 0; height: 1px; background: #81C784; margin: 20px 0; opacity: 0.3;">
+                    <h4 style="color: #2E7D32; margin-bottom: 15px;">📚 Minha Estante</h4>
+
+                    <label class="label-form">Lendo Agora:</label>
+                    <input type="text" id="edit-lendo-agora" placeholder="Qual livro está lendo?">
+
+                    <label class="label-form">Meu Favorito:</label>
+                    <input type="text" id="edit-favorito" placeholder="Seu livro favorito">
+
+                    <label class="label-form">Próxima Leitura:</label>
+                    <input type="text" id="edit-proxima-leitura" placeholder="O que pretende ler a seguir?">
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button id="btn-salvar-estante" class="botao-verde">Salvar Alterações</button>
+                        <button id="btn-cancelar-edicao" class="botao-verde" style="background-color: #777;">Cancelar</button>
+                    </div>
+                </div>
+                
             </div>
 
         </section>
 
-        <!-- Coluna Direita: Em Alta -->
         <aside class="em-alta">
-            <h3>Em Alta na Comunidade</h3>
-            <ol>
+            <h3 style="color: #2E7D32; margin-bottom: 15px; font-family: 'Playfair Display', serif;">Em Alta na Comunidade</h3>
+            <ol style="padding-left: 20px; line-height: 1.8;">
                 <li>O Senhor dos Anéis</li>
                 <li>Clean Code</li>
                 <li>Drácula</li>
@@ -116,6 +168,30 @@
 
     </main>
 
-    <script src="script.js"></script>
+   <footer class="rodape-site">
+        <div class="rodape-conteudo">
+            <div class="rodape-logo">
+                <h3>📚 Cantinho Literário</h3>
+                <p>A rede social para apaixonados por livros</p>
+            </div>
+            
+            <hr class="rodape-divisor">
+            
+            <ul class="rodape-links">
+                <li><a href="#">Sobre</a></li>
+                <li><a href="#">Termos de Uso</a></li>
+                <li><a href="#">Privacidade</a></li>
+                <li><a href="#">Contato</a></li>
+                <li><a href="#">Ajuda</a></li>
+            </ul>
+            
+            <div class="rodape-creditos">
+                <p>&copy; 2026 Cantinho Literário. Todos os direitos reservados.</p>
+                <p>Feito com ❤️ para leitores</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
