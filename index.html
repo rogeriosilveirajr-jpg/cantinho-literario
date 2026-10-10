@@ -169,6 +169,7 @@
     ══════════════════════════════ -->
     <section id="s-notif" class="screen" aria-label="Notificações">
       <div style="padding:16px 14px 8px;font-family:'Lora',serif;font-size:1.3rem;font-weight:700;color:#1C1008;">Notificações</div>
+      <div id="follow-requests" style="padding:0 14px;"></div>
       <div id="notif-list" style="padding:0 14px;display:flex;flex-direction:column;gap:0;">
         <!-- Notificações carregadas dinamicamente aqui -->
       </div>
@@ -296,6 +297,7 @@
         <div class="settings-group">
           <div class="settings-group-label">Conta</div>
           <button class="settings-row" onclick="openSheet('sh-privacy')"><div class="sr-icon sri-orange"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div><div class="sr-txt"><strong>Privacidade da Conta</strong></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
+          <button id="settings-moderation" class="settings-row" style="display:none" onclick="openModeration()"><div class="sr-icon sri-orange"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z"/></svg></div><div class="sr-txt"><strong>Moderação</strong></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
           <button class="settings-row" onclick="showToast('Notificações em breve')"><div class="sr-icon sri-red"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div><div class="sr-txt"><strong>Notificações</strong><span>Gerenciar alertas</span></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
         </div>
         <div class="settings-group">
@@ -472,10 +474,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <!-- App scripts -->
-<script src="firebase-config.js?v=2"></script>
-<script src="auth.js?v=2"></script>
-<script src="db.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="firebase-config.js?v=3"></script>
+<script src="auth.js?v=3"></script>
+<script src="db.js?v=3"></script>
+<script src="app.js?v=3"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -637,6 +639,22 @@
     <div class="sh-body" style="padding-bottom: 20px;">
       <div id="post-menu-actions" style="display:flex; flex-direction:column; gap:12px;">
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Moderação (só para administradores) -->
+<div id="sh-moderation" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-mod-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-moderation')">Fechar</button>
+      <h2 id="sh-mod-ttl" class="sh-title">Moderação</h2>
+      <span style="width:60px"></span>
+    </div>
+    <div class="sh-body" style="padding-bottom:20px;">
+      <p style="font-size:.85rem;color:#8A7060;margin:0 0 12px;">Denúncias pendentes. Remova o post se ele quebrar as regras da comunidade, ou dispense a denúncia.</p>
+      <div id="moderation-list"></div>
     </div>
   </div>
 </div>

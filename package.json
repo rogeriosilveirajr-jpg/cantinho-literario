@@ -1,0 +1,13 @@
+{
+  "name": "cantinho-literario",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:rules": "firebase emulators:exec --only firestore --project demo-cantinho \"node --test tests/\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4",
+    "firebase": "^10.12.0",
+    "firebase-tools": "^13.11.0"
+  }
+}

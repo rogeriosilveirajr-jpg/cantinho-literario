@@ -31,7 +31,9 @@ function loadFeed(refresh = false) {
   if (FEED_LOADING) return;
   FEED_LOADING = true;
 
+  // As regras de segurança só liberam a busca geral de posts públicos.
   let q = db.collection('posts')
+    .where('isPrivate', '==', false)
     .orderBy('createdAt', 'desc')
     .limit(20);
 
@@ -98,6 +100,7 @@ function subscribeNewPosts() {
   if (DB_LISTENERS.newPosts) DB_LISTENERS.newPosts();
 
   const ref = db.collection('posts')
+    .where('isPrivate', '==', false)
     .orderBy('createdAt', 'desc')
     .limit(1);
 
@@ -373,6 +376,10 @@ async function followUserDB(targetId, targetBtn) {
       APP_USER.followingCount = (APP_USER.followingCount || 0) + 1;
     }
 
+    if (isPrivate) {
+      createNotification(targetId, 'follow_request', `🔔 <b>${APP_USER.displayName}</b> pediu para seguir você.`);
+    }
+
     const msg = isPrivate ? 'Pedido de seguir enviado 📨' : 'Seguindo! ✓';
     showToast(msg);
     if (targetBtn) { 
@@ -602,7 +609,8 @@ const covImgEl = document.getElementById('ep-cover-img');
         currentBatch.update(doc.ref, {
           'authorSnap.avatarUrl': newAvatar,
           'authorSnap.displayName': newName,
-          'authorSnap.handle': newHandle
+          'authorSnap.handle': newHandle,
+          isPrivate: updates.isPrivate !== undefined ? updates.isPrivate : (APP_USER.isPrivate || false)
         });
         operationCount++;
       });
@@ -664,6 +672,27 @@ const covImgEl = document.getElementById('ep-cover-img');
   }
 }
 
+/**
+ * Grava em todos os posts do usuário o mesmo isPrivate do perfil.
+ * As regras de segurança usam esse campo para decidir quem vê cada post,
+ * então ele precisa acompanhar o perfil. Também corrige posts antigos sem o campo.
+ */
+async function syncMyPostsPrivacy(isPrivate) {
+  if (!APP_USER || !FIREBASE_CONFIGURED) return;
+  const wanted = !!isPrivate;
+  try {
+    const snap = await db.collection('posts').where('authorId', '==', APP_USER.uid).get();
+    const stale = snap.docs.filter(d => d.data().isPrivate !== wanted);
+    for (let i = 0; i < stale.length; i += 450) {
+      const batch = db.batch();
+      stale.slice(i, i + 450).forEach(d => batch.update(d.ref, { isPrivate: wanted }));
+      await batch.commit();
+    }
+  } catch (err) {
+    console.warn('Não foi possível sincronizar a privacidade dos posts:', err);
+  }
+}
+
 async function savePrivacyUI() {
   if (!APP_USER) return;
   const btn = document.querySelector('#sh-privacy .sh-action');
@@ -672,6 +701,7 @@ async function savePrivacyUI() {
     const isPrivate = document.getElementById('ep-private-settings').checked;
     await db.collection('users').doc(APP_USER.uid).update({ isPrivate });
     APP_USER.isPrivate = isPrivate;
+    await syncMyPostsPrivacy(isPrivate);
     
     const isPrivEl = document.getElementById('ep-private');
     if (isPrivEl) isPrivEl.checked = isPrivate;
@@ -754,6 +784,88 @@ async function sendReportDB(reason) {
   } catch (err) {
     showToast('Erro ao enviar denúncia 😕');
     console.error(err);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  MODERAÇÃO (administradores em admins/{uid}, criados no console do Firebase)
+// ════════════════════════════════════════════════════════════
+let APP_IS_ADMIN = false;
+
+async function checkAdmin() {
+  APP_IS_ADMIN = false;
+  if (!APP_USER || !FIREBASE_CONFIGURED) return;
+  try {
+    const snap = await db.collection('admins').doc(APP_USER.uid).get();
+    APP_IS_ADMIN = snap.exists;
+  } catch (e) { APP_IS_ADMIN = false; }
+  const row = document.getElementById('settings-moderation');
+  if (row) row.style.display = APP_IS_ADMIN ? '' : 'none';
+}
+
+function openModeration() {
+  if (!APP_IS_ADMIN) return;
+  openSheet('sh-moderation');
+  loadReports();
+}
+
+async function loadReports() {
+  const box = document.getElementById('moderation-list');
+  if (!box) return;
+  box.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Carregando...</p>';
+  try {
+    const snap = await db.collection('contentReports').where('status', '==', 'PENDING').limit(50).get();
+    if (snap.empty) {
+      box.innerHTML = '<p style="color:#B0A090;text-align:center;padding:30px;">Nenhuma denúncia pendente 🎉</p>';
+      return;
+    }
+    const items = await Promise.all(snap.docs.map(async r => {
+      const rep = r.data();
+      let post = null;
+      if (rep.targetType === 'post' && /^[A-Za-z0-9_-]+$/.test(rep.targetId || '')) {
+        const p = await db.collection('posts').doc(rep.targetId).get().catch(() => null);
+        post = p && p.exists ? p.data() : null;
+      }
+      return { id: r.id, rep, post };
+    }));
+    box.innerHTML = items.map(({ id, rep, post }) => {
+      const when = rep.createdAt?.toDate ? timeAgo(rep.createdAt.toDate()) : '';
+      const author = post ? escHtml(post.authorSnap?.displayName || post.authorSnap?.handle || 'Leitor') : '';
+      const text = post ? escHtml((post.text || '').slice(0, 280)) : '<i>O post já foi removido.</i>';
+      return `
+        <div data-report="${escHtml(id)}" style="background:#fff;border:1px solid rgba(232,223,206,0.8);border-radius:12px;padding:12px;margin-bottom:10px;">
+          <div style="font-size:.78rem;color:#C64747;font-weight:700;">Motivo: ${escHtml(rep.reason || '—')}</div>
+          <div style="font-size:.75rem;color:#B0A090;margin-bottom:8px;">${when}</div>
+          ${post ? `<div style="font-size:.8rem;color:#8A7060;margin-bottom:4px;">Post de <b>${author}</b>:</div>` : ''}
+          <div style="font-size:.88rem;color:#1C1008;white-space:pre-wrap;margin-bottom:10px;">${text}</div>
+          <div style="display:flex;gap:8px;">
+            ${post ? `<button onclick="resolveReport('${escHtml(id)}', '${escHtml(rep.targetId)}', true)" style="background:#C64747;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Remover post</button>` : ''}
+            <button onclick="resolveReport('${escHtml(id)}', null, false)" style="background:#F0E8D6;color:#8A7060;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Dispensar</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('Erro ao carregar denúncias:', err);
+    box.innerHTML = '<p style="color:#C64747;text-align:center;padding:20px;">Não foi possível carregar as denúncias.</p>';
+  }
+}
+
+async function resolveReport(reportId, postId, removePost) {
+  if (!APP_IS_ADMIN) return;
+  if (removePost && !confirm('Remover este post para todos?')) return;
+  try {
+    if (removePost && postId) await db.collection('posts').doc(postId).delete();
+    await db.collection('contentReports').doc(reportId).update({
+      status: removePost ? 'REMOVED' : 'DISMISSED',
+      reviewedBy: APP_USER.uid,
+      reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    document.querySelector(`#moderation-list [data-report="${reportId}"]`)?.remove();
+    if (!document.querySelector('#moderation-list [data-report]')) loadReports();
+    showToast(removePost ? 'Post removido ✓' : 'Denúncia dispensada');
+  } catch (err) {
+    console.error(err);
+    showToast('Não foi possível concluir 😕');
   }
 }
 
@@ -1069,9 +1181,72 @@ async function createNotification(targetUserId, type, message, postId = null) {
   }
 }
 
+// A mensagem da notificação é escrita por quem envia. Escapa tudo e só devolve o negrito.
+function safeNotifMessage(msg) {
+  return escHtml(msg).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>');
+}
+
+// ════════════════════════════════════════════════════════════
+//  PEDIDOS PARA SEGUIR (perfis privados)
+// ════════════════════════════════════════════════════════════
+
+async function loadFollowRequests() {
+  const box = document.getElementById('follow-requests');
+  if (!box || !APP_USER || !FIREBASE_CONFIGURED) return;
+  try {
+    const snap = await db.collection('followGraph')
+      .where('followedId', '==', APP_USER.uid)
+      .where('status', '==', 'PENDING')
+      .get();
+    if (snap.empty) { box.innerHTML = ''; return; }
+
+    const rows = await Promise.all(snap.docs.map(async d => {
+      const followerId = d.data().followerId;
+      const u = (await db.collection('users').doc(followerId).get()).data() || {};
+      return { followerId, name: u.displayName || 'Leitor', handle: u.handle || '', avatar: u.avatarUrl || 'avatar-placeholder.svg' };
+    }));
+
+    box.innerHTML = `<div style="font-size:.78rem;font-weight:600;color:#8A7060;text-transform:uppercase;letter-spacing:.05em;margin:4px 0 8px;">Pedidos para seguir (${rows.length})</div>` +
+      rows.map(r => `
+        <div data-request="${escHtml(r.followerId)}" style="display:flex;align-items:center;gap:10px;background:#fff;padding:10px 12px;border-radius:12px;border:1px solid rgba(232,223,206,0.7);margin-bottom:8px;">
+          <img src="${escHtml(r.avatar)}" onerror="this.src='avatar-placeholder.svg'" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"/>
+          <div style="flex:1;min-width:0;cursor:pointer;" onclick="openUserProfile('${escHtml(r.followerId)}')">
+            <div style="font-weight:700;color:#1C1008;font-size:.9rem;">${escHtml(r.name)}</div>
+            <div style="color:#B0A090;font-size:.78rem;">@${escHtml(r.handle)}</div>
+          </div>
+          <button onclick="answerFollowRequest('${escHtml(r.followerId)}', true)" style="background:#C8714A;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Aceitar</button>
+          <button onclick="answerFollowRequest('${escHtml(r.followerId)}', false)" style="background:#F0E8D6;color:#8A7060;border:none;border-radius:20px;padding:6px 12px;font-weight:700;font-size:.8rem;cursor:pointer;">Recusar</button>
+        </div>`).join('');
+  } catch (err) {
+    console.error('Erro ao carregar pedidos para seguir:', err);
+  }
+}
+
+async function answerFollowRequest(followerId, accept) {
+  if (!APP_USER || !/^[A-Za-z0-9_-]+$/.test(followerId)) return;
+  const ref = db.collection('followGraph').doc(`${followerId}_${APP_USER.uid}`);
+  try {
+    if (accept) {
+      await ref.update({ status: 'ACCEPTED', updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      try { await db.collection('users').doc(APP_USER.uid).update({ followersCount: firebase.firestore.FieldValue.increment(1) }); } catch (e) {}
+      createNotification(followerId, 'follow_accepted', `✅ <b>${APP_USER.displayName}</b> aceitou seu pedido para seguir.`);
+      showToast('Pedido aceito ✓');
+    } else {
+      await ref.delete();
+      showToast('Pedido recusado');
+    }
+    document.querySelector(`#follow-requests [data-request="${followerId}"]`)?.remove();
+    if (!document.querySelector('#follow-requests [data-request]')) document.getElementById('follow-requests').innerHTML = '';
+  } catch (err) {
+    console.error(err);
+    showToast('Não foi possível responder ao pedido 😕');
+  }
+}
+
 function loadNotifications() {
   const container = document.getElementById('notif-list');
   if (!container || !APP_USER || !FIREBASE_CONFIGURED) return;
+  loadFollowRequests();
   
   if (DB_LISTENERS.notifs) {
     if (DB_LISTENERS.notifs_user === APP_USER.uid) {
@@ -1099,14 +1274,15 @@ function loadNotifications() {
       snap.docs.forEach(doc => {
         const d = doc.data();
         const timeStr = timeAgo(new Date(d.createdAtMillis || Date.now()));
-        const action = d.postId ? `openSinglePost('${d.postId}')` : `openUserProfile('${d.senderId}')`;
+        const safeId = v => /^[A-Za-z0-9_-]+$/.test(String(v || '')) ? v : '';
+        const action = safeId(d.postId) ? `openSinglePost('${d.postId}')` : (safeId(d.senderId) ? `openUserProfile('${d.senderId}')` : '');
         const avatar = escHtml(d.senderAvatar || 'avatar-placeholder.svg');
         
         const html = `
           <div onclick="${action}" style="cursor:pointer;display:flex;align-items:center;padding:14px 0;border-bottom:1px solid rgba(232,223,206,0.5);${d.read ? 'opacity:0.7;' : ''} transition:background 0.2s;" onmouseover="this.style.background='#F0E8D6'" onmouseout="this.style.background='transparent'">
             <img src="${avatar}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:12px;" onerror="this.src='avatar-placeholder.svg'"/>
             <div style="flex:1;">
-              <p style="font-size:.9rem;color:#1C1008;margin:0;">${d.message}</p>
+              <p style="font-size:.9rem;color:#1C1008;margin:0;">${safeNotifMessage(d.message)}</p>
               <p style="font-size:.75rem;color:#B0A090;margin:4px 0 0;">${timeStr}</p>
             </div>
             ${!d.read ? `<div style="width:8px;height:8px;background-color:#C8714A;border-radius:50%;margin-left:10px;"></div>` : ''}
@@ -1281,7 +1457,12 @@ async function openUserProfile(userId) {
        return;
     }
     
-    const postsSnap = await db.collection('posts').where('authorId', '==', userId).limit(20).get();
+    let postsQuery = db.collection('posts').where('authorId', '==', userId);
+    // Quem não segue (ou não é o dono) só pode buscar os posts públicos.
+    if (!APP_USER || (APP_USER.uid !== userId && !isFollowing)) {
+      postsQuery = postsQuery.where('isPrivate', '==', false);
+    }
+    const postsSnap = await postsQuery.limit(20).get();
     const postsList = [];
     postsSnap.forEach(p => postsList.push({ id: p.id, ...p.data() }));
     postsList.sort((a, b) => {
@@ -1465,6 +1646,7 @@ async function startChat(otherUserId, otherUserName, otherUserAvatar) {
   const users = [myId, otherUserId];
 
   if (!snap.exists) {
+    try {
     await chatRef.set({
       users: users,
       lastMessage: '',
@@ -1478,6 +1660,11 @@ async function startChat(otherUserId, otherUserName, otherUserAvatar) {
         [otherUserId]: otherUserAvatar || 'avatar-placeholder.svg'
       }
     });
+    } catch (err) {
+      console.warn('Conversa não permitida:', err);
+      showToast('Para conversar, uma de vocês precisa seguir a outra 💬');
+      return;
+    }
   }
   
   openChatRoom(chatId, otherUserName, otherUserAvatar, users);

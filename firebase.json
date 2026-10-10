@@ -2,9 +2,15 @@
   "hosting": {
     "public": ".",
     "ignore": [
-      "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "*.md",
+      "firebase.json",
+      "firestore.indexes.json",
+      "firestore.rules",
+      "package-lock.json",
+      "package.json",
+      "tests/**"
     ],
     "rewrites": [
       {
@@ -14,6 +20,7 @@
     ]
   },
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }

@@ -1,124 +1,230 @@
 rules_version = '2';
+
+// ============================================================
+//  CANTINHO LITERÁRIO — Regras de segurança do Firestore
+//
+//  Importante: regras não funcionam como filtro. Uma busca só é aceita
+//  se as regras permitirem TODOS os documentos que ela pode trazer.
+//  Por isso o feed busca só posts com isPrivate == false, e o perfil
+//  de quem a pessoa não segue também filtra isPrivate == false.
+// ============================================================
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // 👇 NOVA REGRA ADICIONADA: Permissão para o sistema de Chats
-    match /chats/{chatId} {
-      allow read: if request.auth != null && request.auth.uid in resource.data.users;
-      allow create: if request.auth != null && request.auth.uid in request.resource.data.users;
-      allow update, delete: if request.auth != null && request.auth.uid in resource.data.users;
-      
-      match /messages/{messageId} {
-        allow create: if request.auth != null && request.auth.uid in request.resource.data.users;
-        allow read: if request.auth != null && (
-          ('users' in resource.data && request.auth.uid in resource.data.users) ||
-          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.users
+
+    // ---------- funções auxiliares ----------
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(me()));
+    }
+
+    function isPrivateUser(userId) {
+      let ref = /databases/$(database)/documents/users/$(userId);
+      return exists(ref) && get(ref).data.get('isPrivate', false) == true;
+    }
+
+    function followAccepted(followerId, followedId) {
+      let ref = /databases/$(database)/documents/followGraph/$(followerId + '_' + followedId);
+      return exists(ref) && get(ref).data.status == 'ACCEPTED';
+    }
+
+    function blockedBetween(a, b) {
+      return exists(/databases/$(database)/documents/userBlocks/$(a + '_' + b))
+          || exists(/databases/$(database)/documents/userBlocks/$(b + '_' + a));
+    }
+
+    // Pode ver o conteúdo (posts, estante) de ownerId?
+    function canSeeUser(ownerId) {
+      return ownerId == me() || !isPrivateUser(ownerId) || followAccepted(me(), ownerId);
+    }
+
+    // Pode ver um post? Usa o campo isPrivate do próprio post (mantido em sincronia pelo app).
+    function canSeePost(post) {
+      return post.authorId == me()
+          || post.get('isPrivate', false) == false
+          || followAccepted(me(), post.authorId);
+    }
+
+    function changesOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    function stepOfOne(field) {
+      let before = resource.data.get(field, 0);
+      let after = request.resource.data.get(field, 0);
+      return after == before + 1 || after == before - 1;
+    }
+
+    // ---------- administradores (moderação) ----------
+    // Para tornar alguém moderador, crie à mão no console do Firebase o documento admins/{uid}.
+    match /admins/{userId} {
+      allow read: if signedIn() && userId == me();
+      allow write: if false;
+    }
+
+    // ---------- usuários ----------
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && userId == me()
+          && (!('email' in request.resource.data) || request.resource.data.email == null);
+      allow update: if signedIn() && (
+          // o próprio usuário edita o perfil (sem gravar e-mail no documento público)
+          (userId == me() && (!('email' in request.resource.data) || request.resource.data.email == null))
+          // outra pessoa só pode somar/subtrair 1 no contador de seguidores
+          || (userId != me() && changesOnly(['followersCount']) && stepOfOne('followersCount'))
         );
+      allow delete: if signedIn() && userId == me();
+
+      match /private/{docId} {
+        allow read, write: if signedIn() && userId == me();
+      }
+
+      match /notifications/{notifId} {
+        allow read, update, delete: if signedIn() && userId == me();
+        allow create: if signedIn()
+            && request.resource.data.senderId == me()
+            && userId != me()
+            && !blockedBetween(me(), userId);
+      }
+
+      match /library/{bookId} {
+        allow read: if signedIn() && canSeeUser(userId);
+        allow write: if signedIn() && userId == me();
+      }
+    }
+
+    match /userBooks/{userId}/library/{bookId} {
+      allow read: if signedIn() && canSeeUser(userId);
+      allow write: if signedIn() && userId == me();
+    }
+
+    // ---------- posts ----------
+    match /posts/{postId} {
+      // Moderadores também leem, para analisar denúncias de posts privados.
+      allow read: if signedIn() && (canSeePost(resource.data) || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.authorId == me()
+          && request.resource.data.isPrivate is bool;
+      allow update: if signedIn() && (
+          // o autor edita o post (sem trocar o autor)
+          (resource.data.authorId == me() && request.resource.data.authorId == me())
+          // quem pode ver o post só altera os contadores, de 1 em 1
+          || (canSeePost(resource.data) && changesOnly(['likesCount']) && stepOfOne('likesCount'))
+          || (canSeePost(resource.data) && changesOnly(['commentsCount']) && stepOfOne('commentsCount'))
+        );
+      allow delete: if signedIn() && (resource.data.authorId == me() || isAdmin());
+
+      function parentPost() { return get(/databases/$(database)/documents/posts/$(postId)).data; }
+
+      match /likes/{userId} {
+        allow read: if signedIn() && canSeePost(parentPost());
+        allow create: if signedIn() && userId == me()
+            && request.resource.data.userId == me()
+            && canSeePost(parentPost());
+        allow delete: if signedIn() && userId == me();
+        allow update: if false;
+      }
+
+      match /comments/{commentId} {
+        allow read: if signedIn() && canSeePost(parentPost());
+        allow create: if signedIn()
+            && request.resource.data.authorId == me()
+            && canSeePost(parentPost())
+            && !blockedBetween(me(), parentPost().authorId);
+        allow update: if signedIn() && resource.data.authorId == me();
+        allow delete: if signedIn() && (resource.data.authorId == me() || isAdmin());
+      }
+    }
+
+    // Busca dos próprios comentários em todos os posts (usada ao excluir a conta).
+    match /{path=**}/comments/{commentId} {
+      allow read: if signedIn() && resource.data.authorId == me();
+    }
+
+    // ---------- seguir ----------
+    match /followGraph/{followId} {
+      allow read: if signedIn();
+
+      // Quem segue cria o pedido. Perfil privado só aceita pedido PENDENTE.
+      allow create: if signedIn()
+          && request.resource.data.followerId == me()
+          && request.resource.data.followedId is string
+          && request.resource.data.followedId != me()
+          && followId == me() + '_' + request.resource.data.followedId
+          && !blockedBetween(me(), request.resource.data.followedId)
+          && (
+            request.resource.data.status == 'PENDING'
+            || (request.resource.data.status == 'ACCEPTED' && !isPrivateUser(request.resource.data.followedId))
+          );
+
+      // Só quem recebeu o pedido pode aceitá-lo (PENDENTE → ACEITO).
+      allow update: if signedIn()
+          && resource.data.followedId == me()
+          && resource.data.status == 'PENDING'
+          && request.resource.data.status == 'ACCEPTED'
+          && changesOnly(['status', 'updatedAt']);
+
+      // Quem segue pode deixar de seguir; quem é seguido pode recusar ou remover o seguidor.
+      allow delete: if signedIn()
+          && me() in [resource.data.followerId, resource.data.followedId];
+    }
+
+    // ---------- bloqueios ----------
+    match /userBlocks/{blockId} {
+      allow read: if signedIn() && me() in [resource.data.blockerId, resource.data.blockedId];
+      allow create: if signedIn()
+          && request.resource.data.blockerId == me()
+          && request.resource.data.blockedId is string
+          && request.resource.data.blockedId != me()
+          && blockId == me() + '_' + request.resource.data.blockedId;
+      allow delete: if signedIn() && resource.data.blockerId == me();
+      allow update: if false;
+    }
+
+    // ---------- chat ----------
+    // Conversa só entre duas pessoas que se seguem (em qualquer direção) e sem bloqueio entre elas.
+    match /chats/{chatId} {
+      function members() { return get(/databases/$(database)/documents/chats/$(chatId)).data.users; }
+
+      // resource == null: o app confere se a conversa já existe antes de criá-la.
+      allow read: if signedIn() && (resource == null || me() in resource.data.users);
+      allow create: if signedIn()
+          && request.resource.data.users is list
+          && request.resource.data.users.size() == 2
+          && me() in request.resource.data.users
+          && (chatId == request.resource.data.users[0] + '_' + request.resource.data.users[1]
+              || chatId == request.resource.data.users[1] + '_' + request.resource.data.users[0])
+          && !blockedBetween(request.resource.data.users[0], request.resource.data.users[1])
+          && (followAccepted(request.resource.data.users[0], request.resource.data.users[1])
+              || followAccepted(request.resource.data.users[1], request.resource.data.users[0]));
+      allow update: if signedIn()
+          && me() in resource.data.users
+          && request.resource.data.users == resource.data.users
+          && !blockedBetween(resource.data.users[0], resource.data.users[1]);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && me() in members();
+        allow create: if signedIn()
+            && me() in members()
+            && request.resource.data.senderId == me()
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 2000
+            && !blockedBetween(members()[0], members()[1]);
         allow update, delete: if false;
       }
     }
-    
-    match /posts/{postId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-          && request.resource.data.authorId == request.auth.uid;
-      
-      // Permite que o autor edite seu post, ou que outros usuários apenas alterem os contadores de likes/comentários.
-      allow update: if request.auth != null && (
-        request.auth.uid == resource.data.authorId
-        || (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'commentsCount'])
-          && (request.resource.data.likesCount == resource.data.likesCount + 1 || request.resource.data.likesCount == resource.data.likesCount - 1 || request.resource.data.likesCount == resource.data.likesCount)
-          && (request.resource.data.commentsCount == resource.data.commentsCount + 1 || request.resource.data.commentsCount == resource.data.commentsCount - 1 || request.resource.data.commentsCount == resource.data.commentsCount)
-        )
-      );
-      
-      // Mantemos o 'delete' restrito: apenas o dono pode apagar o próprio post
-      allow delete: if request.auth != null && request.auth.uid == resource.data.authorId;
-      
-      match /likes/{userId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth != null
-            && request.auth.uid == userId
-            && request.resource.data.userId == request.auth.uid;
-        allow delete: if request.auth != null
-            && request.auth.uid == userId;
-        allow update: if false;
-      }
-      match /comments/{commentId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth != null
-            && request.resource.data.authorId == request.auth.uid;
-        allow update, delete: if request.auth != null
-            && resource.data.authorId == request.auth.uid;
-      }
-    }
-    
-    // Usuários podem ler perfis, mas não devem armazenar e-mail em documentos públicos
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId
-          && (!('email' in request.resource.data) || request.resource.data.email == null);
-      
-      // Permissão para a subcoleção privada (onde salvamos o e-mail)
-      match /private/{docId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-      }
-      
-      // Exceção para as Notificações
-      match /notifications/{notifId} {
-        allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-        allow create: if request.auth != null
-            && request.auth.uid == request.resource.data.senderId;
-      }
-      
-      // Permissão para a Estante de Livros (library)
-      match /library/{bookId} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null && request.auth.uid == userId;
-      }
-    }
-    
-    // Sistema de seguir/bloquear
-    match /followGraph/{docId} {
-      // As checagens de followGraph podem consultar um documento inexistente para saber se existe seguimento.
-      // Autenticados podem ler esses documentos para que o app trate usuários privados corretamente.
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-          && request.resource.data.followerId == request.auth.uid
-          && request.resource.data.followedId != request.auth.uid
-          && request.resource.data.followerId is string
-          && request.resource.data.followedId is string;
-      allow update: if request.auth != null
-          && request.auth.uid in [resource.data.followerId, resource.data.followedId];
-      allow delete: if request.auth != null
-          && request.auth.uid == resource.data.followerId;
-    }
-    match /userBlocks/{docId} {
-      allow read: if request.auth != null
-          && request.auth.uid in [resource.data.blockerId, resource.data.blockedId];
-      allow create: if request.auth != null
-          && request.resource.data.blockerId == request.auth.uid
-          && request.resource.data.blockedId != request.auth.uid
-          && request.resource.data.blockerId is string
-          && request.resource.data.blockedId is string;
-      allow delete: if request.auth != null
-          && request.auth.uid == resource.data.blockerId;
-      allow update: if false;
-    }
-    
-    // Biblioteca de livros dos usuários
-    match /userBooks/{userId}/library/{bookId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Denúncias
-    match /contentReports/{docId} {
-      allow create: if request.auth != null
-          && request.auth.uid == request.resource.data.reporterId
-          && request.resource.data.reporterId != request.resource.data.targetId;
-      allow read: if false;
+
+    // ---------- denúncias ----------
+    match /contentReports/{reportId} {
+      allow create: if signedIn()
+          && request.resource.data.reporterId == me()
+          && request.resource.data.reporterId != request.resource.data.targetId
+          && request.resource.data.status == 'PENDING';
+      allow read, update: if isAdmin();
+      allow delete: if false;
     }
   }
 }

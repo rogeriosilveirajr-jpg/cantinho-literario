@@ -35,6 +35,9 @@ function initAuth() {
             await userRef.update({ email: firebase.firestore.FieldValue.delete() });
           }
           await loadBlockedList();
+          // Corrige em segundo plano posts antigos sem o campo isPrivate (exigido pelas regras).
+          if (typeof syncMyPostsPrivacy === 'function') syncMyPostsPrivacy(APP_USER.isPrivate || false);
+          if (typeof checkAdmin === 'function') checkAdmin();
           hideSplash();
           enterApp();
           return;
