@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Avatar padrão</title>
+  <desc id="desc">Ilustração abstrata de um leitor</desc>
+  <rect width="160" height="160" rx="80" fill="#E2A257"/>
+  <circle cx="80" cy="64" r="25" fill="#FFF8EE" opacity=".9"/>
+  <path d="M35 137c5-30 23-45 45-45s40 15 45 45" fill="#FFF8EE" opacity=".9"/>
+  <path d="M53 79c8 8 18 12 27 12s19-4 27-12" fill="none" stroke="#C8714A" stroke-width="5" stroke-linecap="round"/>
+</svg>

@@ -1,197 +1,686 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cantinho Literário</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('Cantinho Literário error:', e.error || e.message);
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Cantinho Literário promise rejection:', e.reason);
+    });
+  </script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMTkyIDE5MiI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIGZpbGw9IiNDODcxNEEiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNjAiIGZpbGw9IiNmZmYiPkNMPC90ZXh0Pjwvc3ZnPg=="/>
+  <meta name="theme-color" content="#E8A048"/>
+  <meta name="description" content="Cantinho Literário — rede social acolhedora para leitores."/>
+  <meta name="color-scheme" content="light"/>
+  <meta property="og:title" content="Cantinho Literário"/>
+  <meta property="og:description" content="Compartilhe leituras, descubra livros e encontre sua comunidade."/>
+  <meta property="og:type" content="website"/>
+  <title>Cantinho Literário</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
 <body>
 
-    <header class="cabecalho-principal">
-        <div class="logo">
-            <h2>🖋️ Cantinho <span>Literário</span></h2>
+<!-- ════════════════════════════════════
+     SPLASH
+════════════════════════════════════ -->
+<div id="splash" class="splash">
+  <div class="splash-inner">
+    <div class="splash-icon">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="80" height="80" rx="20" fill="#C8714A"/>
+        <path d="M14 58C14 58 24 26 40 24C56 22 66 58 66 58" stroke="#FFFBF0" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M40 24V58" stroke="#FFFBF0" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M20 50Q30 46 40 48Q50 46 60 50" stroke="#FFFBF0" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="splash-title">Cantinho Literário</h1>
+    <p class="splash-tagline">Sua comunidade de leitores</p>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     LOGIN
+════════════════════════════════════ -->
+<div id="screen-login" class="login-screen hidden">
+  <div class="login-top">
+    <div class="login-hero">
+      <div class="login-logo-wrap">
+        <svg viewBox="0 0 80 80" fill="none">
+          <rect width="80" height="80" rx="20" fill="#C8714A"/>
+          <path d="M14 58C14 58 24 26 40 24C56 22 66 58 66 58" stroke="#FFFBF0" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <path d="M40 24V58" stroke="#FFFBF0" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M20 50Q30 46 40 48Q50 46 60 50" stroke="#FFFBF0" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1 class="login-app-name">Cantinho Literário</h1>
+      <p class="login-tagline">Compartilhe leituras, descubra livros<br/>e conecte-se com quem ama ler.</p>
+    </div>
+  </div>
+  <div class="login-bottom">
+    <div class="login-btn-stack">
+      <button class="btn-apple" id="btn-apple" onclick="loginWithApple()" aria-label="Entrar com Apple">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.42c1.42.07 2.4.74 3.22.8.97-.19 1.9-.89 3.15-.95 1.73.08 3.04.93 3.84 2.37-3.52 2.07-2.94 6.72.49 8.03-.47 1.16-.97 2.3-2.7 3.61M12 7.17c-.16-2.6 2.17-4.76 4.62-4.96.38 2.82-2.55 5.1-4.62 4.96z"/></svg>
+        Entrar com Apple
+      </button>
+      <button class="btn-google" id="btn-google" onclick="loginWithGoogle()" aria-label="Continuar com Google">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuar com Google
+      </button>
+      <button class="btn-email" onclick="loginWithEmail()" aria-label="Continuar com e-mail">Continuar com E-mail</button>
+    </div>
+    <p class="login-terms">Ao continuar, você concorda com os <button class="terms-link" onclick="showToast('Termos de Uso')">Termos de Uso</button> e <button class="terms-link" onclick="showToast('Política de Privacidade')">Política de Privacidade</button>.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     MAIN APP
+════════════════════════════════════ -->
+<div id="app" class="hidden">
+
+  <!-- TOP NAV BAR -->
+  <nav class="top-nav" role="navigation" aria-label="Navegação principal">
+    <button class="tnav-btn on" id="tnav-home" onclick="goTo('home')" aria-label="Feed principal" aria-selected="true">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+    </button>
+    <button class="tnav-btn" id="tnav-search" onclick="goTo('search')" aria-label="Explorar">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
+      </svg>
+    </button>
+    <button class="tnav-btn" id="tnav-chat" onclick="goTo('chats')" aria-label="Mensagens">
+      <div style="position:relative;display:inline-flex;">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <span class="chat-pip" style="display:none; position:absolute; top:2px; right:2px; width:8px; height:8px; background:#C8714A; border-radius:50%; border:2px solid #fff;"></span>
+      </div>
+    </button>
+    <button class="tnav-btn" id="tnav-notif" onclick="goTo('notif')" aria-label="Notificações">
+      <div style="position:relative;display:inline-flex;">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <span class="notif-pip"></span>
+      </div>
+    </button>
+    <button class="tnav-btn" id="tnav-profile" onclick="goTo('profile')" aria-label="Meu perfil">
+      <img src="avatar-placeholder.svg" alt="Meu perfil" class="tnav-avatar-img" id="my-tnav-avatar"/>
+    </button>
+  </nav>
+
+  <!-- CONTENT AREA -->
+  <div class="content-area">
+
+    <!-- ══════════════════════════════
+         SCREEN: HOME FEED
+    ══════════════════════════════ -->
+    <section id="s-home" class="screen active" aria-label="Feed">
+      <div class="compose-bar" onclick="openSheet('sh-new-post')">
+         <img src="avatar-placeholder.svg" id="compose-bar-av" class="compose-bar-av"/>
+         <div class="compose-bar-text" id="compose-bar-text">O que você está pensando hoje?</div>
+      </div>
+      
+      <div class="feed-tabs-container">
+        <button class="ftab-btn apt" id="ftab-normal" role="tab" aria-selected="true" aria-controls="view-feed" onclick="switchFeedTab('normal')">Feed</button>
+        <button class="ftab-btn" id="ftab-trade" role="tab" aria-selected="false" aria-controls="view-feed" onclick="switchFeedTab('trade')">Trocas & Doações</button>
+      </div>
+
+      <div id="view-feed" class="feed-list" aria-live="polite" aria-busy="false">
+        <!-- Feed dinâmico renderizado aqui -->
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         SCREEN: SEARCH / EXPLORE
+    ══════════════════════════════ -->
+    <section id="s-search" class="screen" aria-label="Explorar">
+      <div style="padding:16px 14px 8px;">
+        <div style="background:#fff;border:1.5px solid #E8DFCE;border-radius:9999px;display:flex;align-items:center;gap:10px;padding:10px 16px;box-shadow:0 2px 8px rgba(44,24,8,.06);">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#8A7060" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="search" id="search-input" oninput="performSearch()" placeholder="Buscar livros, autores, leitores..." style="flex:1;border:none;outline:none;font-size:.9rem;color:#1C1008;background:transparent;" aria-label="Buscar"/>
         </div>
+      </div>
+      
+      <div id="search-default-view">
+        <div style="padding:8px 14px 6px;font-size:.78rem;font-weight:600;color:#8A7060;text-transform:uppercase;letter-spacing:.05em;">Em destaque</div>
+        <div class="books-grid"></div>
+      </div>
+      
+      <div id="search-results-view" style="display:none; padding:10px 14px; display:flex; flex-direction:column; gap:12px;">
+      </div>
+    </section>
 
-        <div class="menu-topo-direito">
-            <button id="btn-notificacoes" class="btn-icone-header" title="Notificações">
-                🔔 <span id="badge-notificacao" style="display: none;">0</span>
-            </button>
+    <!-- ══════════════════════════════
+         SCREEN: NOTIFICATIONS
+    ══════════════════════════════ -->
+    <section id="s-notif" class="screen" aria-label="Notificações">
+      <div style="padding:16px 14px 8px;font-family:'Lora',serif;font-size:1.3rem;font-weight:700;color:#1C1008;">Notificações</div>
+      <div id="notif-list" style="padding:0 14px;display:flex;flex-direction:column;gap:0;">
+        <!-- Notificações carregadas dinamicamente aqui -->
+      </div>
+    </section>
 
-            <button id="btn-configuracoes-perfil" class="btn-icone-header" title="Configurações">
-                ⚙️
-            </button>
+    <!-- ══════════════════════════════
+         SCREEN: PROFILE
+    ══════════════════════════════ -->
+    <section id="s-profile" class="screen" aria-label="Meu Perfil">
 
-            <button id="btn-sair-sessao" class="botao-verde btn-sair" style="display: none;">
-                🚪 Sair
-            </button>
+      <!-- Nav bar with settings icon -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px;">
+        <span style="font-size:.88rem;color:#8A7060;" class="profile-top-handle" id="my-top-handle"></span>
+        <button onclick="goTo('settings')" aria-label="Configurações" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#8A7060;transition:all .14s;" onmouseover="this.style.background='#F0E8D6'" onmouseout="this.style.background='transparent'">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+
+      <!-- COVER PHOTO (Botão de câmera removido) -->
+      <div class="profile-cover" id="profile-cover">
+        <img src="" alt="Capa de perfil" class="profile-cover-img" id="profile-cover-img" style="display:none"/>
+        <div class="profile-cover-overlay"></div>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-top-row">
+          <!-- AVATAR PHOTO (Botão de câmera removido) -->
+          <div class="profile-av-ring-wrap">
+            <div class="profile-av-ring"><img src="avatar-placeholder.svg" alt="" id="profile-av-img"/></div>
+          </div>
+          <div class="profile-stats">
+            <div class="p-stat"><strong id="my-posts-count">0</strong><span>posts</span></div>
+            <div class="p-stat"><strong id="my-followers-count">0</strong><span>seguidores</span></div>
+            <div class="p-stat"><strong id="my-following-count">0</strong><span>seguindo</span></div>
+          </div>
         </div>
-    </header>
-
-    <main class="sessao-conteudo">
+        <div class="profile-name-row">
+          <h1 class="profile-name" id="my-profile-name"></h1>
+          <svg class="profile-lock" id="my-profile-lock" style="display:none;" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" title="Perfil privado"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <span class="profile-handle" id="my-profile-handle"></span>
+        <p class="profile-bio" id="my-profile-bio"></p>
+        <p class="profile-now" id="my-profile-now"></p>
         
-        <aside class="menu-lateral">
-            <div id="btn-menu-perfil" class="item-menu-navegacao">
-                <div class="mini-foto-container">
-                    <img id="mini-foto-sidebar" src="" style="display:none; width:100%; height:100%; object-fit:cover;">
-                    <span id="mini-foto-padrao">👤</span>
-                </div>
-                <div style="display: flex; flex-direction: column;">
-                    <strong id="mini-nome-sidebar" style="color: #2E7D32; line-height: 1.2;">Visitante</strong>
-                    <span id="saudacao-dinamica" style="font-size: 0.75rem; color: #888; font-style: italic;">Olá, leitor!</span>
-                </div>
-            </div>
-
-            <button id="btn-menu-feed" class="botao-verde menu-ativo">🏠 Feed Principal</button>
-        </aside>
-
-        <section class="feed-principal">
-            
-            <div id="tela-feed">
-                <div class="filtros-tematicos">
-                    <button id="aba-feed" class="filtro-clube ativo">📖 Resenhas</button>
-                    <button id="aba-trocas" class="filtro-clube">📦 Trocas & Doações</button>
-                </div>
-
-                <div id="area-login" class="criar-postagem" style="text-align: center;">
-                    <h2 style="color: #2E7D32; margin-bottom: 15px; font-family: 'Playfair Display', serif;">Bem-vindo(a) ao Cantinho</h2>
-                    <input type="email" id="email-login" placeholder="Seu e-mail">
-                    <input type="password" id="senha-login" placeholder="Sua senha">
-
-                    <div id="campos-cadastro" style="display:none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-                        <input type="text" id="cadastro-username" placeholder="Nome de usuário (ex: @Leitor_SC)">
-                        <textarea id="cadastro-bio" rows="2" placeholder="Sua bio de leitor (ex: Fã de terror gótico e aventura)"></textarea>
-                        <div style="text-align: left; font-size: 0.85rem;">
-                            <label style="color: #2E7D32; font-weight: bold;">📸 Foto de perfil (Opcional):</label>
-                            <input type="file" id="cadastro-foto" accept="image/*" style="border:none; padding:0; margin-top: 5px;">
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
-                        <button id="btn-entrar" class="botao-verde">Entrar</button>
-                        <button id="btn-mostrar-cadastro" class="botao-verde" style="background-color: #777;">Criar Nova Conta</button>
-                        <button id="btn-executar-cadastro" class="botao-verde" style="display:none; background-color: #2E7D32;">Finalizar Cadastro</button>
-                    </div>
-                </div>
-
-                <div id="area-postagem" class="criar-postagem" style="display: none;">
-                    <input type="text" id="nome-usuario" placeholder="Seu nome" readonly style="background-color: #eee; cursor: not-allowed; font-weight: bold; color: #2E7D32;">
-                    <input type="text" id="localizacao-usuario" placeholder="Sua cidade e estado (ex: Joinville-SC)" style="display: none;">
-                    <textarea id="texto-comentario" rows="3" placeholder="Compartilhe uma resenha literária com a comunidade..."></textarea>
-                    
-                    <div id="area-foto" style="display: none; margin-bottom: 15px; padding: 10px; background-color: #f9fbf9; border-radius: 8px; border: 1px dashed #81C784;">
-                        <label style="font-size: 0.9rem; color: #2E7D32; font-weight: bold; display: block; margin-bottom: 5px;">📷 Adicionar foto do livro:</label>
-                        <input type="file" id="foto-livro" accept="image/*" style="border: none; padding: 0; background: none; margin: 0;">
-                    </div>
-
-                    <div class="rodape-post">
-                        <button id="btn-enviar" class="botao-verde">Publicar</button>
-                    </div>
-                </div>
-
-                <div id="lista-comentarios" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;"></div>
-            </div>
-
-            <div id="tela-perfil" style="display: none; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
-                
-                <div class="foto-grande-container">
-                    <img id="perfil-foto-grande" src="" style="display:none; width:100%; height:100%; object-fit:cover;">
-                    <span id="perfil-foto-padrao-grande">👤</span>
-                </div>
-                
-                <h2 id="perfil-nome-grande" style="color: #2E7D32; margin-bottom: 10px;">@Visitante</h2>
-                <p id="perfil-bio-grande" style="color: #666; font-style: italic; margin-bottom: 20px;">Faça login para ver seu perfil completo.</p>
-                
-                <button id="btn-abrir-edicao" class="botao-verde" style="background-color: transparent; color: #2E7D32; border: 1px solid #81C784; margin-bottom: 20px;">⚙️ Editar Estante</button>
-
-                <hr style="border: 0; height: 1px; background: #edf2f0; margin: 20px 0;">
-                
-                <div id="visualizacao-estante" class="estante-virtual" style="text-align: left;">
-                    <h3 style="color: #2E7D32; margin-bottom: 15px; font-family: 'Playfair Display', serif;">📚 Minha Estante</h3>
-                    <div class="item-estante-perfil">
-                        <div class="icone-grande">📖</div>
-                        <div><span class="label-estante">Lendo Agora</span><br><strong id="txt-lendo-agora">Viagem ao Centro da Terra</strong></div>
-                    </div>
-                    <div class="item-estante-perfil">
-                        <div class="icone-grande">⭐</div>
-                        <div><span class="label-estante">Favorito</span><br><strong id="txt-favorito">Drácula</strong></div>
-                    </div>
-                    <div class="item-estante-perfil">
-                        <div class="icone-grande">🎯</div>
-                        <div><span class="label-estante">Próxima Leitura</span><br><strong id="txt-proxima-leitura">O Hobbit</strong></div>
-                    </div>
-                </div>
-
-               <div id="formulario-estante" style="display: none; text-align: left; background: #f9fbf9; padding: 20px; border-radius: 12px; border: 1px solid #81C784;">
-                    <h3 style="color: #2E7D32; margin-bottom: 15px;">📝 Editar Meu Perfil</h3>
-                    
-                    <label class="label-form" style="margin-top: 0;">📸 Alterar Foto de Perfil:</label>
-                    <input type="file" id="edit-foto-perfil" accept="image/*" style="border:none; padding:0; margin-top: 5px; margin-bottom: 15px;">
-
-                    <label class="label-form">Nome de Usuário:</label>
-                    <input type="text" id="edit-username" placeholder="Seu @nome">
-
-                    <label class="label-form">Sua Bio:</label>
-                    <textarea id="edit-bio" rows="2" placeholder="Escreva um pouco sobre você..."></textarea>
-
-                    <hr style="border: 0; height: 1px; background: #81C784; margin: 20px 0; opacity: 0.3;">
-                    <h4 style="color: #2E7D32; margin-bottom: 15px;">📚 Minha Estante</h4>
-
-                    <label class="label-form">Lendo Agora:</label>
-                    <input type="text" id="edit-lendo-agora" placeholder="Qual livro está lendo?">
-
-                    <label class="label-form">Meu Favorito:</label>
-                    <input type="text" id="edit-favorito" placeholder="Seu livro favorito">
-
-                    <label class="label-form">Próxima Leitura:</label>
-                    <input type="text" id="edit-proxima-leitura" placeholder="O que pretende ler a seguir?">
-
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button id="btn-salvar-estante" class="botao-verde">Salvar Alterações</button>
-                        <button id="btn-cancelar-edicao" class="botao-verde" style="background-color: #777;">Cancelar</button>
-                    </div>
-                </div>
-                
-            </div>
-
-        </section>
-
-        <aside class="em-alta">
-            <h3 style="color: #2E7D32; margin-bottom: 15px; font-family: 'Playfair Display', serif;">Em Alta na Comunidade</h3>
-            <ol style="padding-left: 20px; line-height: 1.8;">
-                <li>O Senhor dos Anéis</li>
-                <li>Clean Code</li>
-                <li>Drácula</li>
-            </ol>
-        </aside>
-
-    </main>
-
-   <footer class="rodape-site">
-        <div class="rodape-conteudo">
-            <div class="rodape-logo">
-                <h3>📚 Cantinho Literário</h3>
-                <p>A rede social para apaixonados por livros</p>
-            </div>
-            
-            <hr class="rodape-divisor">
-            
-            <ul class="rodape-links">
-                <li><a href="#">Sobre</a></li>
-                <li><a href="#">Termos de Uso</a></li>
-                <li><a href="#">Privacidade</a></li>
-                <li><a href="#">Contato</a></li>
-                <li><a href="#">Ajuda</a></li>
-            </ul>
-            
-            <div class="rodape-creditos">
-                <p>&copy; 2026 Cantinho Literário. Todos os direitos reservados.</p>
-                <p>Feito com ❤️ para leitores</p>
-            </div>
+        <!-- CONTAINER PARA OS GÊNEROS -->
+        <div class="profile-tags" id="profile-genres-container"></div>
+        
+        <div class="profile-btn-row">
+          <button class="btn-edit-pf" onclick="openSheet('sh-edit-profile')">Editar Perfil</button>
+          <button class="btn-icon-pf" onclick="showToast('Link copiado! 🔗')" aria-label="Compartilhar">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316"/></svg>
+          </button>
         </div>
-    </footer>
+      </div>
 
-    <script type="module" src="script.js"></script>
+      <!-- Reading challenge -->
+      <div class="challenge-wrap">
+        <div class="chal-label">
+          <span>📖 Desafio 2026</span>
+          <span class="chal-count" id="my-chal-count">0/0 livros</span>
+        </div>
+        <div class="chal-track"><div class="chal-fill" id="chal-fill" style="width:0%"></div></div>
+      </div>
+
+      <!-- Profile tabs -->
+      <div class="ptabs-bar" role="tablist" aria-label="Seções do perfil">
+        <button class="ptab-btn apt" role="tab" aria-selected="true" data-pt="posts" onclick="switchPtab(this,'posts')">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Posts</span>
+        </button>
+        <button class="ptab-btn" role="tab" aria-selected="false" data-pt="tbr" onclick="switchPtab(this,'tbr')">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>TBR</span>
+        </button>
+        <button class="ptab-btn" role="tab" aria-selected="false" data-pt="read" onclick="switchPtab(this,'read')">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Lidos</span>
+        </button>
+        <button class="ptab-btn" role="tab" aria-selected="false" data-pt="wish" onclick="switchPtab(this,'wish')">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          <span>Wishlist</span>
+        </button>
+      </div>
+
+      <!-- Tab panels -->
+      <div class="ptab-panels">
+        <div id="pt-posts" class="ptab-panel show">
+          <div class="posts-grid">
+            <!-- Posts carregados dinamicamente -->
+          </div>
+        </div>
+        <div id="pt-tbr" class="ptab-panel">
+          <div class="shelf-header">
+            <button class="btn-add-book" onclick="openBookSearch('tbr')">+ Adicionar à TBR</button>
+          </div>
+          <div class="shelf-list" id="list-tbr"></div>
+        </div>
+        <div id="pt-read" class="ptab-panel">
+          <div class="shelf-header">
+            <button class="btn-add-book" onclick="openBookSearch('read')">+ Adicionar aos Lidos</button>
+          </div>
+          <div class="shelf-list" id="list-read"></div>
+        </div>
+        <div id="pt-wish" class="ptab-panel">
+          <div class="shelf-header">
+            <button class="btn-add-book" onclick="openBookSearch('wishlist')">+ Adicionar à Wishlist</button>
+          </div>
+          <div class="shelf-list" id="list-wishlist"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         SCREEN: SETTINGS
+    ══════════════════════════════ -->
+    <section id="s-settings" class="screen" aria-label="Configurações">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 10px 6px;">
+        <button onclick="goTo('profile')" aria-label="Voltar" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#8A7060;transition:all .14s;" onmouseover="this.style.background='#F0E8D6'" onmouseout="this.style.background='transparent'">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <span style="font-family:'Lora',serif;font-size:1.1rem;font-weight:700;color:#1C1008;">Configurações</span>
+      </div>
+
+      <div class="settings-list">
+        <div class="settings-group">
+          <div class="settings-group-label">Conta</div>
+          <button class="settings-row" onclick="openSheet('sh-privacy')"><div class="sr-icon sri-orange"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div><div class="sr-txt"><strong>Privacidade da Conta</strong></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
+          <button class="settings-row" onclick="showToast('Notificações em breve')"><div class="sr-icon sri-red"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div><div class="sr-txt"><strong>Notificações</strong><span>Gerenciar alertas</span></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="settings-group">
+          <div class="settings-group-label">Sessão</div>
+          <button class="settings-row" onclick="doSignOut()"><div class="sr-icon sri-orange"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div><div class="sr-txt"><strong>Sair da conta</strong></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="settings-group">
+          <div class="settings-group-label">Zona de Perigo</div>
+          <button class="settings-row sr-danger" onclick="openSheet('sh-delete-account')"><div class="sr-icon sri-danger"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></div><div class="sr-txt"><strong style="color:#DC2626">Excluir Conta Definitivamente</strong><span>Ação irreversível</span></div><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+<section id="s-chats" class="screen" aria-label="Mensagens">
+      <div class="screen-header" style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
+        <h2 style="font-size:1.5rem; color:#2C2016; font-family:'Lora',serif; margin:0;">Mensagens</h2>
+        <div style="position:relative;">
+          <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#B0A090;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </span>
+          <input type="text" id="new-chat-search" onfocus="handleChatSearchFocus()" oninput="handleChatSearchInput()" placeholder="Buscar seguidores para conversar..." style="width:100%; padding:10px 14px 10px 40px; border:1px solid #E8DFCE; border-radius:24px; font-size:0.95rem; outline:none; background:#F4EFEB;" />
+        </div>
+      </div>
+      <div id="chats-list-container" style="padding:10px 20px; display:flex; flex-direction:column; gap:12px;">
+        <!-- Dynamic chat list -->
+      </div>
+      <div id="new-chat-list" style="display:none; padding:10px 20px; flex-direction:column; gap:8px;">
+        <!-- Followers list for chat will be injected here -->
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         SCREEN: CHAT ROOM
+    ══════════════════════════════ -->
+    <section id="s-chat-room" class="screen" aria-label="Chat" style="flex-direction:column; height:100%; padding-bottom:0;">
+      <div class="chat-header" style="display:flex; align-items:center; padding:12px 16px; background:#fff; border-bottom:1px solid #E8DFCE; position:sticky; top:0; z-index:10;">
+        <button onclick="goTo('chats')" style="background:transparent; border:none; color:#C8714A; cursor:pointer; padding:8px; margin-left:-8px;">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <img id="chat-room-av" src="avatar-placeholder.svg" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-left:8px;" />
+        <h2 id="chat-room-name" style="font-size:1.1rem; color:#2C2016; margin:0 0 0 12px; font-weight:600;">...</h2>
+      </div>
+      <div id="chat-messages-container" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; background:#FAFAFA;">
+        <!-- Dynamic messages -->
+      </div>
+      <div class="chat-input-area" style="padding:12px 16px; background:#fff; border-top:1px solid #E8DFCE; display:flex; gap:10px; align-items:center; padding-bottom:calc(12px + var(--safe-bot, 0px));">
+        <button onclick="toggleEmojiPicker('chat-input', this)" style="background:transparent; border:none; font-size:1.4rem; cursor:pointer; color:#8A7060; padding:0;">😊</button>
+        <input type="text" id="chat-input" placeholder="Digite uma mensagem..." style="flex:1; border:1px solid #E8DFCE; border-radius:24px; padding:10px 16px; font-size:0.95rem; outline:none;" onkeypress="if(event.key==='Enter') sendChatMessage()" />
+        <button onclick="sendChatMessage()" style="background:#C8714A; color:#fff; border:none; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+  </div><!-- end content-area -->
+
+<!-- Comments -->
+<div id="sh-comments" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-cmt-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-comments')">Fechar</button>
+      <h2 id="sh-cmt-ttl" class="sh-title">Comentários</h2>
+      <div style="width:50px;"></div>
+    </div>
+    <div class="sh-body" style="display:flex; flex-direction:column; height:calc(100% - 60px);">
+      <div class="comments-list" style="flex:1; overflow-y:auto; padding:10px 0;"></div>
+      <div style="display:flex; gap:8px; padding:10px 14px; border-top:1px solid #E8DFCE; background:#FFFBF0;">
+        <input type="text" id="cmt-input" placeholder="Escreva um comentário..." style="flex:1; border:1px solid #E8DFCE; border-radius:20px; padding:8px 14px; font-size:0.9rem; outline:none; background:#fff;" />
+        <button onclick="submitComment(document.getElementById('cmt-input').value); document.getElementById('cmt-input').value='';" style="background:#C8714A; color:#fff; border:none; border-radius:20px; padding:8px 16px; font-weight:bold; cursor:pointer;">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Profile -->
+<div id="sh-user-profile" class="sheet-overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header" style="position:absolute; top:12px; left:12px; z-index:10; border:none; background:transparent;">
+      <button class="sh-cancel" onclick="closeSheet('sh-user-profile')" style="background:rgba(255,255,255,0.8); padding:6px 12px; border-radius:20px; color:#1C1008; font-weight:bold; border:none; cursor:pointer;">Voltar</button>
+    </div>
+    <div class="sh-body" style="padding:0; height:100%; overflow-y:auto; padding-bottom:60px;">
+      <div class="profile-cover">
+        <img src="" id="up-cover-img" class="profile-cover-img" style="display:none;" />
+        <div class="profile-cover-overlay"></div>
+      </div>
+      <div class="profile-block">
+        <div class="profile-top-row">
+          <div class="profile-av-ring-wrap">
+            <div class="profile-av-ring"><img src="avatar-placeholder.svg" id="up-av-img"/></div>
+          </div>
+          <div class="profile-stats">
+            <div class="p-stat"><strong id="up-posts-count">0</strong><span>posts</span></div>
+            <div class="p-stat"><strong id="up-followers-count">0</strong><span>seguidores</span></div>
+            <div class="p-stat"><strong id="up-following-count">0</strong><span>seguindo</span></div>
+          </div>
+        </div>
+        <div class="profile-name-row">
+          <h1 class="profile-name" id="up-name"></h1>
+        </div>
+        <span class="profile-handle" id="up-handle"></span>
+        <p class="profile-bio" id="up-bio"></p>
+        
+        <div id="up-btn-row" style="margin-top:12px; margin-bottom:20px; display:flex; gap:10px; justify-content:center;"></div>
+        
+        <div style="border-top:1px solid #E8DFCE; margin-top:16px;"></div>
+        <div id="up-feed-container" style="padding-top:12px; display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Single Post -->
+<div id="sh-single-post" class="sheet-overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-single-post')">Voltar</button>
+      <h2 class="sh-title">Publicação</h2>
+      <div style="width:50px;"></div>
+    </div>
+    <div class="sh-body" style="padding:0; overflow-y:auto; padding-bottom:60px;">
+      <div id="sp-container" style="padding:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Report -->
+<div id="sh-report" class="sheet-overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-report')">Cancelar</button>
+      <h2 class="sh-title">Denunciar</h2>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sh-body" style="padding-bottom:20px;">
+      <p style="font-size:0.9rem; color:#8A7060; margin-bottom:12px; text-align:center;">Por que você está denunciando isso?</p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="settings-row" onclick="sendReportDB('Spam')"><div class="sr-txt"><strong>É spam</strong></div></button>
+        <button class="settings-row" onclick="sendReportDB('Discurso de ódio')"><div class="sr-txt"><strong>Discurso de ódio ou assédio</strong></div></button>
+        <button class="settings-row" onclick="sendReportDB('Conteúdo inadequado')"><div class="sr-txt"><strong>Conteúdo inadequado</strong></div></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Block -->
+<div id="sh-block" class="sheet-overlay hidden" role="dialog" aria-modal="true">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-block')">Cancelar</button>
+      <h2 class="sh-title">Bloquear Usuário</h2>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sh-body" style="padding-bottom:20px;">
+      <p style="font-size:0.9rem; color:#8A7060; margin-bottom:12px; text-align:center;">Tem certeza que deseja bloquear este usuário? Ele não poderá ver suas publicações nem interagir com você.</p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="settings-row sr-danger" onclick="blockUserDB(MENU_AUTHOR_ID)"><div class="sr-txt"><strong>Sim, bloquear</strong></div></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+<!-- App scripts -->
+<script src="firebase-config.js?v=2"></script>
+<script src="auth.js?v=2"></script>
+<script src="db.js?v=2"></script>
+<script src="app.js?v=2"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(console.error);
+      });
+    }
+  </script>
+
+  <!-- FAB removido conforme pedido -->
+  <!-- <button id="fab" class="fab" ...>...</button> -->
+
+</div><!-- end #app -->
+
+<!-- ════════════════════════════════════
+     BOTTOM SHEETS
+════════════════════════════════════ -->
+
+<!-- New Post -->
+<div id="sh-new-post" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-np-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-new-post')">Cancelar</button>
+      <h2 id="sh-np-ttl" class="sh-title">Nova Publicação</h2>
+      <button class="sh-action" onclick="publishPost()">Publicar</button>
+    </div>
+    <div class="sh-body">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="font-size:0.9rem; font-weight:600; color:#8A7060;">Tipo de publicação:</div>
+        <select id="post-type-select" style="background:#F4EFEB; border:none; padding:6px 12px; border-radius:12px; color:#1C1008; font-weight:500; outline:none;" onchange="togglePostLocationField()">
+          <option value="normal">Normal</option>
+          <option value="trade">Troca / Doação</option>
+        </select>
+      </div>
+      <div id="post-location-container" style="display:none; margin-bottom:12px;">
+        <input type="text" id="post-location" placeholder="Localização (ex: São Paulo - SP)" style="width:100%; padding:10px; border:1px solid #E8DFCE; border-radius:8px; font-size:0.9rem; outline:none;" />
+      </div>
+      <div class="compose-row">
+        <img src="avatar-placeholder.svg" alt="" class="cmp-av"/>
+        <textarea id="post-ta" class="cmp-ta" placeholder="O que você está lendo? Compartilhe uma reflexão, citação ou recomendação..." maxlength="500" rows="5" aria-label="Texto da publicação"></textarea>
+      </div>
+      <div id="post-img-preview-container" style="display:none; position:relative; margin-bottom:12px; max-height:200px; border-radius:12px; overflow:hidden;">
+        <img id="post-img-preview" src="" style="width:100%; height:100%; object-fit:cover; display:block;" />
+        <button onclick="clearPostImage()" style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer;">&times;</button>
+      </div>
+      <div class="compose-tools">
+        <div style="display:flex;gap:4px;">
+          <input type="file" id="post-img-input" accept="image/*" style="display:none;" onchange="handlePostImage(this)" />
+          <button class="ct-btn" aria-label="Foto" onclick="document.getElementById('post-img-input').click()"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Foto</button>
+        </div>
+        <span class="ct-chars" id="ct-chars">0/500</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile -->
+<div id="sh-edit-profile" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-ep-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-edit-profile')">Cancelar</button>
+      <h2 id="sh-ep-ttl" class="sh-title">Editar Perfil</h2>
+      <button class="sh-action" onclick="saveProfileUI()">Salvar</button>
+    </div>
+    <div class="sh-body">
+      <div id="ep-cover-preview" style="width:100%;height:80px;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#C8714A,#E8A048,#7A9E7E);margin-bottom:14px;position:relative;cursor:pointer;" onclick="changeCoverPhoto()">
+        <img id="ep-cover-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;"/>
+      </div>
+      <div class="ep-av-row"><img src="avatar-placeholder.svg" alt="" class="ep-av-img" id="ep-av-img"/><button class="ep-av-btn" onclick="changeAvatarPhoto()">Alterar foto de perfil</button></div>
+      <div class="ep-field"><label class="ep-label">Nome completo</label><input type="text" id="ep-name" class="ep-input" placeholder="Seu nome"/></div>
+      <div class="ep-field"><label class="ep-label">@handle</label><input type="text" id="ep-handle" class="ep-input" placeholder="seu.usuario"/></div>
+      <div class="ep-field"><label class="ep-label">Bio</label><textarea id="ep-bio" class="ep-textarea" rows="3" placeholder="Sua bio..."></textarea></div>
+      <div class="ep-field"><label class="ep-label">Cidade</label><input type="text" id="ep-city" class="ep-input" placeholder="Sua cidade"/></div>
+      <div class="ep-field"><label class="ep-label">Lendo agora</label><input type="text" id="ep-now" class="ep-input" placeholder="O que está lendo?"/></div>
+      
+      <div class="ep-field">
+        <label class="ep-label">Gêneros favoritos</label>
+        <input type="text" id="ep-genres" class="ep-input" placeholder="Ex: Poesia, Fantasia, Terror" aria-label="Gêneros literários"/>
+      </div>
+
+      <div class="ep-field" style="margin-top:16px;">
+        <label class="ep-label">Privacidade da Conta</label>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+          <input type="checkbox" id="ep-private" style="width:18px; height:18px; accent-color:#C8714A; cursor:pointer;" />
+          <label for="ep-private" style="font-size:0.9rem; color:#1C1008; font-weight:600; cursor:pointer;">Conta Privada</label>
+        </div>
+        <p style="font-size:0.8rem; color:#8A7060; margin:6px 0 0 0; line-height:1.4;">Se ativado, apenas seus seguidores aprovados poderão ver suas publicações.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Book Search -->
+<div id="sh-add-book" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-add-book-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-add-book')">Cancelar</button>
+      <h2 id="sh-add-book-ttl" class="sh-title">Buscar Livro</h2>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="sh-body" style="padding-top: 10px;">
+      <div class="search-bar">
+        <input type="text" id="book-search-input" placeholder="Título do livro ou autor..." oninput="debounceBookSearch(this.value)" autocomplete="off"/>
+      </div>
+      <div id="book-search-loading" style="display:none; text-align:center; padding: 20px; color: #8A7060;">Buscando...</div>
+      <div id="book-search-results" class="book-search-results"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Book Options / Rating -->
+<div id="sh-book-options" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-bo-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-book-options')">Fechar</button>
+      <h2 id="sh-bo-ttl" class="sh-title">Opções do Livro</h2>
+      <button class="sh-action" style="color:#d32f2f;" onclick="removeBook()">Remover</button>
+    </div>
+    <div class="sh-body" style="display:flex; flex-direction:column; gap:16px; padding-bottom: 20px;">
+      <div id="bo-book-info" style="display:flex; gap:12px; align-items:center;">
+         <img id="bo-book-cover" src="" style="width:50px; height:75px; border-radius:6px; object-fit:cover;"/>
+         <div>
+            <h3 id="bo-book-title" style="margin:0; font-size:1rem; color:#1C1008; font-weight:600;">Título</h3>
+            <p id="bo-book-author" style="margin:2px 0 0; font-size:0.85rem; color:#8A7060;">Autor</p>
+         </div>
+      </div>
+      
+      <div>
+        <label class="ep-label">Mover para a estante:</label>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+           <button class="bo-shelf-btn" id="bo-btn-tbr" onclick="changeBookShelf('tbr')">TBR</button>
+           <button class="bo-shelf-btn" id="bo-btn-read" onclick="changeBookShelf('read')">Lido</button>
+           <button class="bo-shelf-btn" id="bo-btn-wishlist" onclick="changeBookShelf('wishlist')">Wishlist</button>
+        </div>
+      </div>
+
+      <div id="bo-rating-section" style="display:none;">
+        <label class="ep-label">Sua Avaliação:</label>
+        <div class="star-rating" id="bo-stars" style="margin-top:6px; font-size:28px; color:#ddd; cursor:pointer; display:flex; gap:6px;">
+           <span data-val="1">★</span><span data-val="2">★</span><span data-val="3">★</span><span data-val="4">★</span><span data-val="5">★</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Post Options Menu -->
+<div id="sh-post-menu" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-pm-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-post-menu')">Cancelar</button>
+      <h2 id="sh-pm-ttl" class="sh-title">Opções</h2>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="sh-body" style="padding-bottom: 20px;">
+      <div id="post-menu-actions" style="display:flex; flex-direction:column; gap:12px;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Privacy Settings -->
+<div id="sh-privacy" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-priv-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-privacy')">Cancelar</button>
+      <h2 id="sh-priv-ttl" class="sh-title">Privacidade</h2>
+      <button class="sh-action" onclick="savePrivacyUI()">Salvar</button>
+    </div>
+    <div class="sh-body" style="padding-bottom: 20px;">
+      <div class="ep-field">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div>
+            <label for="ep-private-settings" style="font-size:1.05rem; color:#1C1008; font-weight:700; cursor:pointer;">Conta Privada</label>
+            <p style="font-size:0.85rem; color:#8A7060; margin:4px 0 0 0; line-height:1.4;">Quando sua conta é privada, apenas as pessoas que você aprovar poderão ver suas publicações. Seus seguidores atuais não serão afetados.</p>
+          </div>
+          <input type="checkbox" id="ep-private-settings" style="width:24px; height:24px; accent-color:#C8714A; cursor:pointer; flex-shrink:0;" />
+        </div>
+      </div>
+      <div class="priv-options" style="display:grid; gap:10px; margin-top:16px;">
+        <button id="priv-pub" class="priv-option" type="button" onclick="pickPrivacy('public')" aria-pressed="false">
+          <div>
+            <strong>Pública</strong>
+            <p style="margin:4px 0 0 0; font-size:.85rem; color:#8A7060;">Qualquer pessoa pode ver suas publicações.</p>
+          </div>
+          <div id="pck-pub" aria-hidden="true" style="min-width:24px; min-height:24px; display:flex; align-items:center; justify-content:center;"></div>
+        </button>
+        <button id="priv-priv" class="priv-option" type="button" onclick="pickPrivacy('private')" aria-pressed="false">
+          <div>
+            <strong>Privada</strong>
+            <p style="margin:4px 0 0 0; font-size:.85rem; color:#8A7060;">Apenas seguidores aprovados podem ver suas publicações.</p>
+          </div>
+          <div id="pck-priv" aria-hidden="true" style="min-width:24px; min-height:24px; display:flex; align-items:center; justify-content:center;"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="emoji-popup" class="hidden" style="position:fixed; z-index:10000; bottom:80px; left:50%; transform:translateX(-50%); box-shadow:0 4px 20px rgba(0,0,0,0.15); border-radius:8px; overflow:hidden; max-width:calc(100% - 24px); width:320px;">
+  <emoji-picker class="light"></emoji-picker>
+</div>
 </body>
 </html>
