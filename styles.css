@@ -1423,6 +1423,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 /* ================================================================
    DESKTOP RESPONSIVE LAYOUT (Instagram Style)
    ================================================================ */
+/* Etiqueta sobre a capa na janela Editar Perfil: mostra que a faixa é clicável */
+.ep-cover-btn {
+  position: absolute; right: 10px; bottom: 10px;
+  padding: 6px 12px; border-radius: var(--r-pill);
+  background: rgba(255,255,255,.92); color: var(--terracotta);
+  font-size: .8rem; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(20,50,25,.18);
+  pointer-events: none;
+}
+
 /* Logo e textos do menu: escondidos no celular, aparecem no modo computador */
 .tnav-brand, .tnav-label { display: none; }
 
