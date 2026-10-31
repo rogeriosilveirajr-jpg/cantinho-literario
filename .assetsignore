@@ -10,3 +10,8 @@ firestore.indexes.json
 firestore.rules
 package.json
 package-lock.json
+playwright.config.mjs
+test-results
+playwright-report
+lib/package.json
+*.log

@@ -27,6 +27,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="features.css"/>
   <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
 <body>
@@ -102,6 +103,12 @@
       </div>
       <span class="tnav-label">Mensagens</span>
     </button>
+    <button class="tnav-btn" id="tnav-clubs" onclick="goTo('clubs')" aria-label="Clubes do livro">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+      <span class="tnav-label">Clubes</span>
+    </button>
     <button class="tnav-btn" id="tnav-notif" onclick="goTo('notif')" aria-label="Notificações">
       <div style="position:relative;display:inline-flex;">
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -133,6 +140,9 @@
         <button class="ftab-btn apt" id="ftab-normal" role="tab" aria-selected="true" aria-controls="view-feed" onclick="switchFeedTab('normal')">Feed</button>
         <button class="ftab-btn" id="ftab-trade" role="tab" aria-selected="false" aria-controls="view-feed" onclick="switchFeedTab('trade')">Trocas & Doações</button>
       </div>
+      <label class="trade-near" id="trade-near-wrap" hidden>
+        <input type="checkbox" id="trade-near" onchange="toggleTradeNear(this)"/> 📍 Só da minha cidade
+      </label>
 
       <div id="view-feed" class="feed-list" aria-live="polite" aria-busy="false">
         <!-- Feed dinâmico renderizado aqui -->
@@ -142,6 +152,17 @@
     <!-- ══════════════════════════════
          SCREEN: SEARCH / EXPLORE
     ══════════════════════════════ -->
+    <section id="s-clubs" class="screen" aria-label="Clubes do livro">
+      <div class="clubs-head">
+        <div>
+          <h2 class="clubs-title">Clubes do livro</h2>
+          <p class="muted-small">Leiam juntos o livro do mês e conversem sobre ele.</p>
+        </div>
+        <button class="bp-btn" onclick="openSheet('sh-new-club')">+ Criar clube</button>
+      </div>
+      <div id="clubs-list" class="clubs-list"></div>
+    </section>
+
     <section id="s-search" class="screen" aria-label="Explorar">
       <div style="padding:16px 14px 8px;">
         <div style="background:#fff;border:1.5px solid #DCE8DC;border-radius:9999px;display:flex;align-items:center;gap:10px;padding:10px 16px;box-shadow:0 2px 8px rgba(20,50,25,.06);">
@@ -229,11 +250,19 @@
         <div class="chal-track"><div class="chal-fill" id="chal-fill" style="width:0%"></div></div>
       </div>
 
+      <!-- Conquistas e retrospectiva (features.js) -->
+      <div id="achievements" class="ach-wrap"></div>
+      <button class="btn-wrapped" onclick="openWrapped()">✨ Minha retrospectiva do ano</button>
+
       <!-- Profile tabs -->
       <div class="ptabs-bar" role="tablist" aria-label="Seções do perfil">
         <button class="ptab-btn apt" role="tab" aria-selected="true" data-pt="posts" onclick="switchPtab(this,'posts')">
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span>Posts</span>
+        </button>
+        <button class="ptab-btn" role="tab" aria-selected="false" data-pt="reading" onclick="switchPtab(this,'reading')">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <span>Lendo</span>
         </button>
         <button class="ptab-btn" role="tab" aria-selected="false" data-pt="tbr" onclick="switchPtab(this,'tbr')">
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -273,6 +302,12 @@
             <button class="btn-add-book" onclick="openBookSearch('wishlist')">+ Adicionar à Wishlist</button>
           </div>
           <div class="shelf-list" id="list-wishlist"></div>
+        </div>
+        <div id="pt-reading" class="ptab-panel">
+          <div class="shelf-header">
+            <button class="btn-add-book" onclick="openBookSearch('reading')">+ Começar a ler</button>
+          </div>
+          <div class="shelf-list" id="list-reading"></div>
         </div>
       </div>
     </section>
@@ -459,6 +494,54 @@
 </div>
 
 <!-- TOAST -->
+<div id="sh-book-page" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-book-page-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-book-page')">Fechar</button>
+      <h2 id="sh-book-page-ttl" class="sh-title">Livro</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body" id="book-page-body"></div>
+  </div>
+</div>
+<div id="sh-wrapped" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-wrapped-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-wrapped')">Fechar</button>
+      <h2 id="sh-wrapped-ttl" class="sh-title">Retrospectiva</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body" id="wrapped-body"></div>
+  </div>
+</div>
+<div id="sh-club" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-club-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-club'); stopClubMessages()">Fechar</button>
+      <h2 id="sh-club-ttl" class="sh-title">Clube</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body" id="club-body"></div>
+  </div>
+</div>
+<div id="sh-new-club" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-new-club-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-new-club')">Cancelar</button>
+      <h2 id="sh-new-club-ttl" class="sh-title">Novo clube</h2>
+      <button class="sh-action" onclick="createClub()">Criar</button>
+    </div>
+    <div class="sh-body">
+      <div class="ep-field"><label class="ep-label" for="club-name">Nome do clube</label><input id="club-name" class="ep-input" maxlength="60" placeholder="Ex: Clube de Fantasia de Joinville"/></div>
+      <div class="ep-field"><label class="ep-label" for="club-desc">Sobre o clube</label><textarea id="club-desc" class="ep-textarea" rows="3" maxlength="300" placeholder="O que vocês vão ler e como vão se encontrar"></textarea></div>
+      <div class="ep-field"><label class="ep-label" for="club-city">Cidade (opcional)</label><input id="club-city" class="ep-input" maxlength="60" placeholder="Ex: Joinville - SC"/></div>
+    </div>
+  </div>
+</div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
@@ -469,10 +552,12 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <!-- App scripts -->
-<script src="firebase-config.js?v=4"></script>
-<script src="auth.js?v=4"></script>
-<script src="db.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="lib/logic.js?v=5"></script>
+<script src="firebase-config.js?v=5"></script>
+<script src="auth.js?v=5"></script>
+<script src="db.js?v=5"></script>
+<script src="app.js?v=5"></script>
+<script src="features.js?v=5"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -505,6 +590,7 @@
         <select id="post-type-select" style="background:#EEF5EE; border:none; padding:6px 12px; border-radius:12px; color:#1F2A21; font-weight:500; outline:none;" onchange="togglePostLocationField()">
           <option value="normal">Normal</option>
           <option value="trade">Troca / Doação</option>
+          <option value="quote">Citação</option>
         </select>
       </div>
       <div id="post-location-container" style="display:none; margin-bottom:12px;">
@@ -514,6 +600,8 @@
         <img src="avatar-placeholder.svg" alt="" class="cmp-av"/>
         <textarea id="post-ta" class="cmp-ta" placeholder="O que você está lendo? Compartilhe uma reflexão, citação ou recomendação..." maxlength="500" rows="5" aria-label="Texto da publicação"></textarea>
       </div>
+      <div id="post-book-box" class="post-book-box"><button class="ct-btn" onclick="openBookPicker('post')">📖 Marcar livro</button></div>
+      <label class="post-spoiler-lbl"><input type="checkbox" id="post-spoiler"/> ⚠️ Contém spoiler (o texto fica escondido até a pessoa tocar)</label>
       <div id="post-img-preview-container" style="display:none; position:relative; margin-bottom:12px; max-height:200px; border-radius:12px; overflow:hidden;">
         <img id="post-img-preview" src="" style="width:100%; height:100%; object-fit:cover; display:block;" />
         <button onclick="clearPostImage()" style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer;">&times;</button>
@@ -609,7 +697,18 @@
         <div style="display:flex; gap:10px; margin-top:8px;">
            <button class="bo-shelf-btn" id="bo-btn-tbr" onclick="changeBookShelf('tbr')">TBR</button>
            <button class="bo-shelf-btn" id="bo-btn-read" onclick="changeBookShelf('read')">Lido</button>
+           <button class="bo-shelf-btn" id="bo-btn-reading" onclick="changeBookShelf('reading')">Lendo</button>
            <button class="bo-shelf-btn" id="bo-btn-wishlist" onclick="changeBookShelf('wishlist')">Wishlist</button>
+        </div>
+      </div>
+
+      <div id="bo-progress-section" style="display:none;">
+        <label class="ep-label">Progresso de leitura:</label>
+        <div class="bo-progress-row">
+          <input type="number" id="bo-page" min="0" class="ep-input" placeholder="Página atual" aria-label="Página atual"/>
+          <span>de</span>
+          <input type="number" id="bo-total" min="1" class="ep-input" placeholder="Total" aria-label="Total de páginas"/>
+          <button class="bp-btn" onclick="saveReadingProgress()">Salvar</button>
         </div>
       </div>
 

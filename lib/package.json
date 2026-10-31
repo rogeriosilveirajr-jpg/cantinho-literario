@@ -1,0 +1,4 @@
+{
+  "//": "Os arquivos desta pasta rodam no navegador (script comum) e no Node (testes com require), por isso são CommonJS.",
+  "type": "commonjs"
+}

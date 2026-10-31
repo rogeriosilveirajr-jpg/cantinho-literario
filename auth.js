@@ -124,13 +124,21 @@ async function loginWithEmail() {
 
   setLoginLoading(true);
   try {
-    // Tenta login; se falhar, tenta criar conta
+    // Tenta login; se a conta não existir, cria. Com a proteção contra enumeração de e-mails
+    // (padrão do Firebase desde 2023) o erro de conta inexistente vem como auth/invalid-credential.
     try {
       await auth.signInWithEmailAndPassword(email, pass);
     } catch (e) {
-      if (e.code === 'auth/user-not-found') {
+      if (!['auth/user-not-found', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(e.code)) throw e;
+      try {
         await auth.createUserWithEmailAndPassword(email, pass);
-      } else { throw e; }
+      } catch (createErr) {
+        // A conta existe: então a senha estava errada.
+        if (createErr.code === 'auth/email-already-in-use') throw { code: 'auth/wrong-password' };
+        // Conta existente com senha curta também cai aqui: não dá para saber qual dos dois casos é.
+        if (createErr.code === 'auth/weak-password') throw { code: 'cantinho/wrong-or-weak' };
+        throw createErr;
+      }
     }
     const user = auth.currentUser;
     if (user) await handleNewUser(user, 'email');
@@ -145,6 +153,7 @@ async function loginWithEmail() {
       'auth/wrong-password': 'Senha incorreta.',
       'auth/invalid-email':  'E-mail inválido.',
       'auth/weak-password':  'Senha muito fraca (mín. 6 caracteres).',
+      'cantinho/wrong-or-weak': 'E-mail ou senha incorretos. Conta nova precisa de senha com 6 caracteres ou mais.',
     };
     showToast(msgs[err.code] || 'Erro ao fazer login 😕');
     console.error(err);

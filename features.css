@@ -1,0 +1,151 @@
+/* ================================================================
+   CANTINHO LITERÁRIO · recursos de leitor (features.js)
+   Usa os tokens de cor de styles.css.
+   ================================================================ */
+
+.muted-center { text-align: center; color: var(--ink-ghost); padding: 24px 12px; }
+.muted-small { font-size: .82rem; color: var(--ink-soft); }
+
+/* ─── Livro no post, estrelas, citação, spoiler e troca ─── */
+.pc-book {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px;
+  width: calc(100% - 28px); margin: 0 14px 10px; padding: 10px 12px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-md);
+  text-align: left; min-height: 44px;
+}
+.pc-book:hover { border-color: var(--amber-light); }
+.pc-book-title { font-weight: 700; color: var(--ink); font-size: .9rem; }
+.pc-book-author { color: var(--ink-soft); font-size: .8rem; }
+.pc-stars { color: #F4B400; letter-spacing: 1px; font-size: .95rem; margin-left: auto; }
+
+.pc-quote {
+  margin: 0; padding: 14px 18px;
+  font-family: var(--font-display); font-style: italic; font-size: 1.15rem; line-height: 1.5;
+  color: var(--ink); border-left: 4px solid var(--amber); background: var(--bg); border-radius: 0 var(--r-md) var(--r-md) 0;
+}
+.pc-quote-cite { display: block; margin-top: 8px; font-size: .82rem; color: var(--ink-soft); font-style: normal; }
+
+.pc-spoiler { position: relative; }
+.pc-spoiler[data-hidden="true"] .pc-text,
+.pc-spoiler[data-hidden="true"] .pc-see-more { filter: blur(6px); user-select: none; pointer-events: none; }
+.pc-spoiler-btn {
+  position: absolute; inset: 0; margin: auto; height: 40px; width: fit-content; padding: 0 16px;
+  background: var(--white); color: var(--terracotta); font-weight: 700; font-size: .85rem;
+  border: 1.5px solid var(--amber-light); border-radius: var(--r-pill); box-shadow: var(--sh-card);
+}
+
+.pc-trade { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 14px 10px; font-size: .82rem; color: var(--ink-mid); }
+.trade-badge { padding: 3px 10px; border-radius: var(--r-pill); font-weight: 700; font-size: .75rem; }
+.trade-badge.st-AVAILABLE { background: #E8F5E9; color: var(--terracotta); }
+.trade-badge.st-RESERVED { background: #FFF4D6; color: #8A6100; }
+.trade-badge.st-DONE { background: #ECEFF1; color: #546E7A; }
+.trade-near {
+  display: flex; align-items: center; gap: 8px; margin: 6px 14px 4px;
+  font-size: .85rem; font-weight: 600; color: var(--ink-mid); min-height: 44px;
+}
+.trade-near input { width: 18px; height: 18px; min-height: 0; accent-color: var(--terracotta); }
+.menu-btn {
+  padding: 16px; background: #E8F5E9; color: var(--terracotta); border-radius: 12px;
+  font-weight: 700; font-size: 1rem;
+}
+
+/* ─── Nova publicação ─── */
+.post-book-box { margin: 4px 0 10px; }
+.post-book-picked {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; background: var(--bg); border-radius: var(--r-md); font-size: .88rem;
+}
+.post-book-clear { font-size: 1.3rem; color: var(--ink-soft); min-height: 32px; width: 32px; }
+.post-stars { display: flex; gap: 4px; margin-top: 8px; }
+.post-star { font-size: 1.8rem; color: #D6DDD7; min-height: 44px; width: 44px; }
+.post-star.on { color: #F4B400; }
+.post-spoiler-lbl { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--ink-mid); margin-bottom: 10px; }
+.post-spoiler-lbl input { width: 18px; height: 18px; min-height: 0; accent-color: var(--terracotta); }
+
+/* ─── Página do livro ─── */
+.bp-head { display: flex; gap: 14px; align-items: center; }
+.bp-cover { width: 84px; height: 126px; border-radius: 8px; object-fit: cover; box-shadow: var(--sh-card); flex-shrink: 0; }
+.bp-cover-empty { display: flex; align-items: center; justify-content: center; background: var(--cover-bg); font-size: 2rem; }
+.bp-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--ink); }
+.bp-author { color: var(--ink-soft); font-size: .88rem; margin: 2px 0 8px; }
+.bp-avg { font-size: .9rem; color: var(--ink-mid); }
+.bp-avg strong { font-size: 1.4rem; color: var(--ink); }
+.bp-bars { margin: 14px 0 4px; display: flex; flex-direction: column; gap: 4px; }
+.bp-bar { display: grid; grid-template-columns: 28px 1fr 24px; align-items: center; gap: 8px; font-size: .75rem; color: var(--ink-soft); }
+.bp-track { height: 8px; background: var(--bg); border-radius: var(--r-pill); overflow: hidden; }
+.bp-fill { height: 100%; background: #F4B400; border-radius: var(--r-pill); }
+.bp-actions { display: flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+.bp-btn {
+  padding: 0 16px; min-height: 44px; border-radius: var(--r-pill);
+  background: var(--terracotta); color: var(--white); font-weight: 700; font-size: .88rem;
+}
+.bp-btn:hover { background: var(--terracotta-dk); }
+.bp-btn-ghost { background: transparent; color: var(--terracotta); border: 1.5px solid var(--amber-light); }
+.bp-btn-ghost:hover { background: #E8F5E9; }
+.bp-section { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); margin: 18px 0 8px; }
+.bp-recs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.bp-rec {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex-shrink: 0;
+  max-width: 180px; padding: 10px 12px; background: var(--bg); border-radius: var(--r-md); text-align: left; font-size: .85rem;
+}
+.bp-rec span { font-size: .75rem; color: var(--ink-soft); }
+.bp-reviews { display: flex; flex-direction: column; gap: 12px; }
+
+/* ─── Progresso de leitura ─── */
+.shelf-progress { height: 6px; background: var(--bg); border-radius: var(--r-pill); overflow: hidden; margin-top: 6px; }
+.shelf-progress-fill { height: 100%; background: var(--amber); border-radius: var(--r-pill); }
+.shelf-progress-txt { font-size: .7rem; color: var(--ink-soft); }
+.bo-progress-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.bo-progress-row .ep-input { width: 100px; }
+
+/* ─── Conquistas e retrospectiva ─── */
+.ach-wrap { padding: 12px 16px 4px; }
+.ach-head { display: flex; justify-content: space-between; font-size: .85rem; font-weight: 700; color: var(--terracotta); margin-bottom: 8px; }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.ach {
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+  background: var(--bg); border-radius: var(--r-md); font-size: .72rem; color: var(--ink-ghost);
+  filter: grayscale(1); opacity: .65;
+}
+.ach-on { filter: none; opacity: 1; color: var(--ink); background: #E8F5E9; }
+.ach-icon { font-size: 1.2rem; }
+.btn-wrapped {
+  display: block; width: calc(100% - 32px); margin: 10px 16px 6px; min-height: 44px;
+  border-radius: var(--r-pill); font-weight: 700; color: var(--white);
+  background: linear-gradient(135deg, var(--terracotta), #1B5E20);
+}
+.wr-card {
+  background: linear-gradient(160deg, #1B5E20, var(--terracotta) 60%, var(--amber));
+  color: var(--white); border-radius: 20px; padding: 24px 20px; margin-bottom: 14px; text-align: center;
+}
+.wr-kicker { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; opacity: .85; }
+.wr-year { font-family: var(--font-display); font-size: 2.6rem; margin-bottom: 16px; }
+.wr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.wr-item { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,.12); border-radius: 14px; padding: 10px 4px; }
+.wr-icon { font-size: 1.2rem; }
+.wr-value { font-size: 1.4rem; font-weight: 800; }
+.wr-label { font-size: .7rem; opacity: .9; }
+.wr-line { font-size: .9rem; margin-top: 6px; }
+
+/* ─── Clubes ─── */
+.clubs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px; }
+.clubs-title { font-family: var(--font-display); font-size: 1.3rem; color: var(--terracotta); }
+.clubs-list { display: flex; flex-direction: column; gap: 10px; padding: 0 16px 24px; }
+.club-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
+  padding: 14px 16px; background: var(--card); border-radius: var(--r-card); box-shadow: var(--sh-card);
+}
+.club-card-top { display: flex; justify-content: space-between; width: 100%; gap: 8px; }
+.club-name { font-size: 1rem; color: var(--ink); }
+.club-member-tag { font-size: .7rem; font-weight: 700; color: var(--terracotta); background: #E8F5E9; padding: 2px 8px; border-radius: var(--r-pill); }
+.club-meta { font-size: .8rem; color: var(--ink-soft); }
+.club-book { font-size: .82rem; color: var(--ink-mid); }
+.club-desc { color: var(--ink-mid); margin-bottom: 6px; }
+.club-book-box { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.club-book-box .pc-book { width: 100%; margin: 0; }
+.club-msgs { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; padding: 4px 0; }
+.club-msg { align-self: flex-start; max-width: 85%; background: var(--bg); padding: 8px 12px; border-radius: 14px; font-size: .88rem; }
+.club-msg.mine { align-self: flex-end; background: #E8F5E9; }
+.club-msg-name { display: block; font-size: .7rem; font-weight: 700; color: var(--terracotta); }
+.club-send { display: flex; gap: 8px; margin-top: 10px; }
+.club-send input { flex: 1; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--r-pill); }

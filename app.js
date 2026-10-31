@@ -28,8 +28,8 @@ function enterApp() {
 }
 
 // ─── Navegação entre telas ──────────────────────────────────
-const SCREENS = { home: 's-home', search: 's-search', notif: 's-notif', profile: 's-profile', settings: 's-settings', chats: 's-chats', 'chat-room': 's-chat-room' };
-const NAV_IDS = { home: 'tnav-home', search: 'tnav-search', notif: 'tnav-notif', profile: 'tnav-profile', chats: 'tnav-chat' };
+const SCREENS = { home: 's-home', search: 's-search', notif: 's-notif', profile: 's-profile', settings: 's-settings', chats: 's-chats', 'chat-room': 's-chat-room', clubs: 's-clubs' };
+const NAV_IDS = { home: 'tnav-home', search: 'tnav-search', notif: 'tnav-notif', profile: 'tnav-profile', chats: 'tnav-chat', clubs: 'tnav-clubs' };
 let   CUR_SCREEN = 'home';
 
 function goTo(name) {
@@ -50,8 +50,9 @@ const fab = document.getElementById('fab');
   if (name === 'profile') renderMyProfile();
   if (name === 'notif') loadNotifications();
   if (name === 'chats' && typeof loadChats === 'function') loadChats();
+  if (name === 'clubs') loadClubs();
 
-  const titles = { home:'Cantinho Literário', search:'Explorar', notif:'Notificações', profile:'Meu Perfil', settings:'Configurações' };
+  const titles = { home:'Cantinho Literário', search:'Explorar', notif:'Notificações', profile:'Meu Perfil', settings:'Configurações', clubs:'Clubes do livro' };
   document.title = (titles[name] || 'Cantinho') + ' — Cantinho Literário';
 }
 
@@ -113,7 +114,8 @@ function spawnHeart(btn) {
 
 // ─── See More / See Less ────────────────────────────────────
 function toggleSeeMore(btn) {
-  const el = document.getElementById(btn.dataset.target);
+  const wrap = btn.closest('.pc-text-wrap');
+  const el = (wrap && wrap.querySelector('.pc-text')) || document.getElementById(btn.dataset.target);
   if (!el) return;
   const expanded = btn.getAttribute('aria-expanded') === 'true';
   if (expanded) {
@@ -200,13 +202,17 @@ async function publishPost() {
   const postType = select ? select.value : 'normal';
   const location = locInput ? locInput.value.trim() : '';
 
-  if (postType === 'trade' && !location) {
-    showToast('Por favor, informe sua localização.');
+  const extras = getComposeExtras();  // features.js
+  const problem = postType === 'trade' && !location ? 'Por favor, informe sua localização.'
+    : postType === 'quote' && !extras.book ? 'Marque de qual livro é a citação 📖'
+    : null;
+  if (problem) {
+    showToast(problem);
     if (btn) { btn.disabled = false; btn.textContent = 'Publicar'; }
     return;
   }
 
-  const ok = await submitPost(ta.value, POST_IMG_B64, postType, location);  // db.js
+  const ok = await submitPost(ta.value, POST_IMG_B64, postType, location, extras);  // db.js
 
   if (btn) { btn.disabled = false; btn.textContent = 'Publicar'; }
 
@@ -214,6 +220,7 @@ async function publishPost() {
     closeSheet('sh-new-post');
     ta.value = '';
     clearPostImage();
+    resetComposeExtras();
     const chars = document.getElementById('ct-chars');
     if (chars) chars.textContent = '0/500';
     if (postType === 'trade') {
@@ -287,7 +294,8 @@ function closeSheet(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.classList.add('hidden');
-  document.body.style.overflow = '';
+  if (id === 'sh-add-book') window.BOOK_PICK_MODE = null;
+  if (!document.querySelector('.sheet-overlay:not(.hidden)')) document.body.style.overflow = '';
 }
 
 function initOverlayClose() {
@@ -424,10 +432,12 @@ let currentShelfTarget = 'tbr';
 let currentBookOptions = null; // Stores the currently opened book in options modal
 
 function openBookSearch(targetShelf) {
+  window.BOOK_PICK_MODE = null;
   currentShelfTarget = targetShelf;
   const ttl = document.getElementById('sh-add-book-ttl');
   if (targetShelf === 'tbr') ttl.textContent = 'Adicionar à TBR';
   else if (targetShelf === 'read') ttl.textContent = 'Adicionar aos Lidos';
+  else if (targetShelf === 'reading') ttl.textContent = 'Começar a ler';
   else ttl.textContent = 'Adicionar à Wishlist';
   
   document.getElementById('book-search-input').value = '';
@@ -473,7 +483,7 @@ async function searchGoogleBooks(query) {
       
       const itemEl = document.createElement('div');
       itemEl.className = 'sr-item';
-      itemEl.onclick = () => selectBookFromSearch(id, title, author, cover);
+      itemEl.onclick = () => selectBookFromSearch(id, title, author, cover, info.pageCount || 0);
       
       itemEl.innerHTML = `
         <img src="${cover || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" class="sr-cover" onerror="this.onerror=null; this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';"/>
@@ -490,9 +500,11 @@ async function searchGoogleBooks(query) {
   }
 }
 
-function selectBookFromSearch(id, title, author, coverUrl) {
-  const bookData = { id, title, author, coverUrl, rating: 0 };
+function selectBookFromSearch(id, title, author, coverUrl, totalPages = 0) {
+  const bookData = { id, title, author, coverUrl, rating: 0, totalPages };
+  const pickMode = window.BOOK_PICK_MODE;
   closeSheet('sh-add-book');
+  if (pickMode) { onBookPicked(bookData, pickMode); return; }  // features.js
   
   // Se for "read", abre a tela de opções para dar nota. Se não, salva direto.
   if (currentShelfTarget === 'read') {
@@ -517,6 +529,8 @@ function openBookOptions(bookId, optionalBookData = null) {
   if (book.status === 'tbr') document.getElementById('bo-btn-tbr').classList.add('active');
   else if (book.status === 'read') document.getElementById('bo-btn-read').classList.add('active');
   else if (book.status === 'wishlist') document.getElementById('bo-btn-wishlist').classList.add('active');
+  else if (book.status === 'reading') document.getElementById('bo-btn-reading').classList.add('active');
+  showProgressSection(book);  // features.js
   
   const ratingSection = document.getElementById('bo-rating-section');
   if (book.status === 'read') {
@@ -546,7 +560,8 @@ function changeBookShelf(newShelf) {
   
   currentBookOptions.status = newShelf;
   saveBookToLibrary(currentBookOptions, newShelf); // db.js
-  if (newShelf !== 'read') {
+  showProgressSection(currentBookOptions);  // features.js
+  if (newShelf !== 'read' && newShelf !== 'reading') {
       closeSheet('sh-book-options');
   }
 }
@@ -557,16 +572,16 @@ function removeBook() {
   closeSheet('sh-book-options');
 }
 
-// Lógica das estrelas
-document.querySelectorAll('#bo-stars span').forEach(star => {
-  star.addEventListener('click', (e) => {
-    if (!currentBookOptions) return;
-    const val = parseInt(e.target.getAttribute('data-val'));
-    currentBookOptions.rating = val;
-    setStarsUI(val);
-    saveBookToLibrary(currentBookOptions, 'read'); // db.js
-    closeSheet('sh-book-options');
-  });
+// Lógica das estrelas. O clique é escutado no documento porque este script carrega antes
+// da janela "Opções do Livro" existir no HTML (antes as estrelas nunca respondiam).
+document.addEventListener('click', (e) => {
+  const star = e.target.closest('#bo-stars span');
+  if (!star || !currentBookOptions) return;
+  const val = parseInt(star.getAttribute('data-val'), 10);
+  currentBookOptions.rating = val;
+  setStarsUI(val);
+  saveBookToLibrary(currentBookOptions, 'read'); // db.js
+  closeSheet('sh-book-options');
 });
 
 function setStarsUI(rating) {
@@ -589,13 +604,21 @@ window.openPostMenuFor = function(postId, authorId) {
   
   let html = '';
   if (APP_USER && APP_USER.uid === authorId) {
+    html += tradeMenuHtml(postId);  // features.js
     html += `<button style="padding:16px; background:#FFEBEB; color:#D32F2F; border:none; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="deletePost('${postId}')">Excluir Publicação</button>`;
   } else {
-    html += `<button style="padding:16px; background:#E8F2E8; color:#6B7F70; border:none; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="showToast('Post denunciado.'); closeSheet('sh-post-menu');">Denunciar Publicação</button>`;
+    html += `<button style="padding:16px; background:#E8F2E8; color:#6B7F70; border:none; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="openReportFor('${postId}')">Denunciar Publicação</button>`;
   }
   
   actionsDiv.innerHTML = html;
   openSheet('sh-post-menu');
+};
+
+// A denúncia usa CURRENT_POST_ID (db.js); antes ela pegava o post aberto nos comentários, não o do menu.
+window.openReportFor = function(postId) {
+  CURRENT_POST_ID = postId;
+  closeSheet('sh-post-menu');
+  openSheet('sh-report');
 };
 
 window.deletePost = async function(postId) {
@@ -674,6 +697,9 @@ function switchFeedTab(tab) {
     tradeTab.setAttribute('aria-selected', String(tab === 'trade'));
   }
   
+  const near = document.getElementById('trade-near-wrap');
+  if (near) near.hidden = tab !== 'trade';
+
   // Reload feed with new filter
   if (typeof loadFeed === 'function') {
     loadFeed(true);

@@ -4,3 +4,5 @@ node_modules/
 *.log
 .wrangler/
 *.mp4
+test-results/
+playwright-report/

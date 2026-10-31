@@ -32,10 +32,9 @@ function loadFeed(refresh = false) {
   FEED_LOADING = true;
 
   // As regras de segurança só liberam a busca geral de posts públicos.
-  let q = db.collection('posts')
-    .where('isPrivate', '==', false)
-    .orderBy('createdAt', 'desc')
-    .limit(20);
+  let q = db.collection('posts').where('isPrivate', '==', false);
+  if (CURRENT_FEED_TAB === 'trade') q = q.where('postType', '==', 'trade');
+  q = q.orderBy('createdAt', 'desc').limit(20);
 
   if (FEED_LAST_DOC) q = q.startAfter(FEED_LAST_DOC);
 
@@ -54,7 +53,7 @@ function loadFeed(refresh = false) {
         const data = doc.data();
         
         let currentTab = typeof CURRENT_FEED_TAB !== 'undefined' ? CURRENT_FEED_TAB : 'normal';
-        if (currentTab === 'trade' && data.postType !== 'trade') return null;
+        if (currentTab === 'trade' && (data.postType !== 'trade' || !passesTradeFilter(data))) return null;
         
         if (APP_BLOCKED.includes(data.authorId)) return null;
         if (data.isNotification) return null; 
@@ -74,6 +73,11 @@ function loadFeed(refresh = false) {
       
       Promise.all(renderPromises)
         .then(results => {
+          if (CURRENT_FEED_TAB === 'trade' && !results.some(Boolean) && !container.querySelector('.post-card')) {
+            container.innerHTML = `<p class="muted-center">${TRADE_NEAR_ONLY
+              ? 'Nenhuma troca na sua cidade por enquanto. 📍' : 'Nenhuma troca ou doação ainda. 📦'}</p>`;
+            return;
+          }
           results.forEach(res => {
             if (!res) return;
             container.insertAdjacentHTML('beforeend', buildPostCard(res.doc.id, res.data));
@@ -138,7 +142,7 @@ function subscribeNewPosts() {
 //  CRIAR POST
 // ════════════════════════════════════════════════════════════
 
-async function submitPost(text, base64Image = null) {
+async function submitPost(text, base64Image = null, postType = 'normal', location = '', extras = {}) {
   if (!text.trim() && !base64Image) { showToast('Escreva algo ou adicione uma foto! ✍️'); return false; }
   if (!APP_USER)    { showToast('Faça login para publicar'); return false; }
 
@@ -167,6 +171,14 @@ async function submitPost(text, base64Image = null) {
         avatarUrl:   APP_USER.avatarUrl || '',
       },
       type:          'feed',
+      postType:      ['trade', 'quote'].includes(postType) ? postType : 'normal',
+      location:      postType === 'trade' ? location : '',
+      cityKey:       postType === 'trade' ? CL.cityKey(location) : '',
+      tradeStatus:   postType === 'trade' ? 'AVAILABLE' : null,
+      book:          extras.book || null,
+      bookId:        extras.book ? extras.book.id : null,
+      rating:        extras.book ? CL.clampRating(extras.rating) : 0,
+      hasSpoiler:    Boolean(extras.hasSpoiler),
       text:          text ? text.trim() : '',
       imageUrls:     base64Image ? [base64Image] : [],
       bookSnap:      null,
@@ -725,7 +737,7 @@ async function loadMyPosts() {
   try {
     const postsSnap = await db.collection('posts')
       .where('authorId', '==', APP_USER.uid)
-      .limit(30)
+      .limit(MY_POSTS_LIMIT)
       .get();
       
     const postsList = [];
@@ -740,7 +752,11 @@ async function loadMyPosts() {
     container.innerHTML = '<div class="posts-grid" style="display:flex;flex-direction:column;gap:12px;"></div>';
     const grid = container.querySelector('.posts-grid');
     
-    if (postsList.length === 0) {
+    const visible = postsList.filter(p => !p.isNotification);
+    if (postsSnap.size < MY_POSTS_LIMIT) syncMyPostsCount(visible.length);
+    renderAchievements(visible);
+
+    if (visible.length === 0) {
       container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Você ainda não publicou nada. 📸</p>';
       return;
     }
@@ -755,6 +771,18 @@ async function loadMyPosts() {
     console.error('Erro ao carregar meus posts:', err);
     container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Erro ao carregar publicações.</p>';
   }
+}
+
+const MY_POSTS_LIMIT = 200;   // acima disso o contador gravado não é corrigido (a busca não traz tudo)
+
+/** O contador gravado no usuário pode ter ficado errado (post removido pela moderação, por exemplo). */
+function syncMyPostsCount(count) {
+  const el = document.getElementById('my-posts-count');
+  if (el) el.textContent = count;
+  if (APP_USER.postsCount === count) return;
+  APP_USER.postsCount = count;
+  db.collection('users').doc(APP_USER.uid).update({ postsCount: count })
+    .catch(err => console.error('Erro ao corrigir contador de posts:', err));
 }
 
 // ════════════════════════════════════════════════════════════
@@ -839,8 +867,8 @@ async function loadReports() {
           ${post ? `<div style="font-size:.8rem;color:#6B7F70;margin-bottom:4px;">Post de <b>${author}</b>:</div>` : ''}
           <div style="font-size:.88rem;color:#1F2A21;white-space:pre-wrap;margin-bottom:10px;">${text}</div>
           <div style="display:flex;gap:8px;">
-            ${post ? `<button onclick="resolveReport('${escHtml(id)}', '${escHtml(rep.targetId)}', true)" style="background:#C64747;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Remover post</button>` : ''}
-            <button onclick="resolveReport('${escHtml(id)}', null, false)" style="background:#E8F2E8;color:#6B7F70;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Dispensar</button>
+            ${post ? `<button data-id="${escHtml(id)}" data-target="${escHtml(rep.targetId)}" onclick="resolveReport(this.dataset.id, this.dataset.target, true)" style="background:#C64747;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Remover post</button>` : ''}
+            <button data-id="${escHtml(id)}" onclick="resolveReport(this.dataset.id, null, false)" style="background:#E8F2E8;color:#6B7F70;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Dispensar</button>
           </div>
         </div>`;
     }).join('');
@@ -930,7 +958,7 @@ async function addToShelf(shelf, bookData) {
 // ════════════════════════════════════════════════════════════
 
 function escHtml(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  return CL.escapeHtml(s);
 }
 
 function timeAgo(date) {
@@ -1051,6 +1079,7 @@ function buildPostCard(postId, d) {
     if (APP_USER.handle) handle = escHtml(APP_USER.handle);
   }
 
+  rememberPost(postId, d);
   const time = timeAgo(d.createdAt?.toDate ? d.createdAt.toDate() : new Date());
   const text = escHtml(d.text || '');
   const img  = d.imageUrls?.[0] || d.bookSnap?.coverUrl || '';
@@ -1073,9 +1102,10 @@ function buildPostCard(postId, d) {
     <div class="pc-cover-wrap">
       <img src="${escHtml(img)}" alt="Capa do livro" class="pc-cover-img" onerror="this.parentNode.remove()"/>
     </div>` : ''}
+    ${postTradeHtml(postId, d)}
+    ${postBookChipHtml(d)}
     <div class="pc-text-wrap">
-      <p class="pc-text" id="pctxt-${postId}" data-full="${text}">${text.slice(0, 200)}${text.length > 200 ? '...' : ''}</p>
-      ${text.length > 200 ? `<button class="pc-see-more" data-target="pctxt-${postId}" onclick="toggleSeeMore(this)">Ver mais...</button>` : ''}
+      ${postBodyHtml(postId, d, text)}
     </div>
     <div class="pc-actions">
       <button class="pill pill-like" data-liked="false" data-post-id="${postId}"
@@ -1088,7 +1118,7 @@ function buildPostCard(postId, d) {
       <button class="pill pill-icon" onclick="openCommentsFor('${postId}')" aria-label="Comentar">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
       </button>
-      <button class="pill pill-icon" onclick="showToast('Link copiado! 🔗')" aria-label="Compartilhar">
+      <button class="pill pill-icon" onclick="sharePost('${postId}')" aria-label="Compartilhar">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
       </button>
     </div>
@@ -1532,7 +1562,7 @@ function listenMyLibrary() {
   
   db.collection('users').doc(APP_USER.uid).collection('library').onSnapshot(snap => {
     MY_LIBRARY = {};
-    const tbr = [], read = [], wish = [];
+    const tbr = [], read = [], wish = [], reading = [];
     
     snap.forEach(doc => {
       const book = { id: doc.id, ...doc.data() };
@@ -1540,13 +1570,16 @@ function listenMyLibrary() {
       if (book.status === 'tbr') tbr.push(book);
       else if (book.status === 'read') read.push(book);
       else if (book.status === 'wishlist') wish.push(book);
+      else if (book.status === 'reading') reading.push(book);
     });
     
     renderShelf('list-tbr', tbr);
     renderShelf('list-read', read);
     renderShelf('list-wishlist', wish);
+    renderShelf('list-reading', reading);
     
     updateReadingChallenge(read.length);
+    if (MY_POSTS_LOADED) renderAchievements(MY_POSTS_CACHE);
   });
 }
 
@@ -1567,13 +1600,14 @@ function renderShelf(containerId, books) {
     }
     
     return `
-      <div class="shelf-book" onclick="openBookOptions('${book.id}')">
+      <div class="shelf-book" data-id="${escHtml(book.id)}" onclick="openBookOptions(this.dataset.id)">
         <div class="shelf-book-cover-wrap">
-          <img src="${book.coverUrl || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" class="shelf-book-cover" onerror="this.onerror=null; this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';"/>
+          <img src="${escHtml(book.coverUrl) || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" class="shelf-book-cover" onerror="this.onerror=null; this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';"/>
           ${ratingHtml}
         </div>
         <h4 class="shelf-book-title">${escHtml(book.title)}</h4>
         <p class="shelf-book-author">${escHtml(book.author)}</p>
+        ${book.status === 'reading' ? progressBarHtml(book) : ''}
       </div>
     `;
   }).join('');
@@ -1602,13 +1636,16 @@ async function saveBookToLibrary(bookData, shelf) {
   if (!APP_USER) return;
   try {
     const bookRef = db.collection('users').doc(APP_USER.uid).collection('library').doc(bookData.id);
+    const prev = MY_LIBRARY[bookData.id] || {};
     await bookRef.set({
       title: bookData.title,
       author: bookData.author,
       coverUrl: bookData.coverUrl,
       status: shelf,
-      rating: bookData.rating || 0,
-      addedAt: firebase.firestore.FieldValue.serverTimestamp()
+      rating: shelf === 'read' ? (bookData.rating || prev.rating || 0) : 0,
+      totalPages: Number(bookData.totalPages) > 0 ? Number(bookData.totalPages) : (prev.totalPages || null),
+      finishedAt: shelf === 'read' ? (prev.finishedAt || bookData.finishedAt || firebase.firestore.FieldValue.serverTimestamp()) : null,
+      addedAt: prev.addedAt || bookData.addedAt || firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
     showToast('Estante atualizada! 📚');
   } catch (err) {

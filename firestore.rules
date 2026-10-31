@@ -56,6 +56,32 @@ service cloud.firestore {
       return after == before + 1 || after == before - 1;
     }
 
+    // Ids que o app coloca em atributos HTML: só letras, números, _ e -. Impede que um id
+    // malicioso vire código (XSS) na tela de outra pessoa.
+    function safeId(s) { return s is string && s.matches('^[A-Za-z0-9_-]{1,64}$'); }
+    function autoId(s) { return s.matches('^[A-Za-z0-9]{20}$'); }   // formato dos ids gerados pelo Firestore
+
+    function validBook(b) {
+      return b == null || (b is map
+          && b.keys().hasOnly(['id', 'title', 'author', 'coverUrl'])
+          && safeId(b.id)
+          && b.get('title', '') is string && b.get('title', '').size() <= 300
+          && b.get('author', '') is string && b.get('author', '').size() <= 300
+          && b.get('coverUrl', '') is string && b.get('coverUrl', '').size() <= 500);
+    }
+
+    // Campos dos recursos de leitor: tipo do post, nota do livro, spoiler e status da troca.
+    function validPostFields(d) {
+      return d.get('postType', 'normal') in ['normal', 'trade', 'quote']
+          && d.get('rating', 0) is int && d.get('rating', 0) >= 0 && d.get('rating', 0) <= 5
+          && d.get('hasSpoiler', false) is bool
+          && d.get('text', '') is string && d.get('text', '').size() <= 2000
+          && d.get('tradeStatus', null) in [null, 'AVAILABLE', 'RESERVED', 'DONE']
+          && (d.get('bookId', null) == null || safeId(d.bookId))
+          && validBook(d.get('book', null))
+          && d.get('location', '') is string && d.get('location', '').size() <= 100;
+    }
+
     // ---------- administradores (moderação) ----------
     // Para tornar alguém moderador, crie à mão no console do Firebase o documento admins/{uid}.
     match /admins/{userId} {
@@ -67,10 +93,12 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if signedIn();
       allow create: if signedIn() && userId == me()
-          && (!('email' in request.resource.data) || request.resource.data.email == null);
+          && (!('email' in request.resource.data) || request.resource.data.email == null)
+          && request.resource.data.get('followersCount', 0) == 0;
       allow update: if signedIn() && (
           // o próprio usuário edita o perfil (sem gravar e-mail no documento público)
-          (userId == me() && (!('email' in request.resource.data) || request.resource.data.email == null))
+          (userId == me() && (!('email' in request.resource.data) || request.resource.data.email == null)
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['followersCount']))
           // outra pessoa só pode somar/subtrair 1 no contador de seguidores
           || (userId != me() && changesOnly(['followersCount']) && stepOfOne('followersCount'))
         );
@@ -90,7 +118,7 @@ service cloud.firestore {
 
       match /library/{bookId} {
         allow read: if signedIn() && canSeeUser(userId);
-        allow write: if signedIn() && userId == me();
+        allow write: if signedIn() && userId == me() && safeId(bookId);
       }
     }
 
@@ -102,13 +130,26 @@ service cloud.firestore {
     // ---------- posts ----------
     match /posts/{postId} {
       // Moderadores também leem, para analisar denúncias de posts privados.
-      allow read: if signedIn() && (canSeePost(resource.data) || isAdmin());
+      allow get: if signedIn() && (canSeePost(resource.data) || isAdmin());
+      // Buscas (list) precisam de condições que o motor de regras consiga provar pela própria busca.
+      // Não use .get('isPrivate', false) aqui: com valor padrão o motor aceitava QUALQUER busca e
+      // devolvia posts privados de quem a pessoa não segue (falha de privacidade corrigida em 31/10/2026).
+      allow list: if signedIn() && (
+          resource.data.isPrivate == false
+          || resource.data.authorId == me()
+          || followAccepted(me(), resource.data.authorId)
+          || isAdmin());
       allow create: if signedIn()
+          && autoId(postId)
           && request.resource.data.authorId == me()
-          && request.resource.data.isPrivate is bool;
+          && request.resource.data.isPrivate is bool
+          && validPostFields(request.resource.data)
+          && request.resource.data.get('tradeStatus', null) in [null, 'AVAILABLE'];
       allow update: if signedIn() && (
-          // o autor edita o post (sem trocar o autor)
-          (resource.data.authorId == me() && request.resource.data.authorId == me())
+          // o autor edita o post (sem trocar o autor); troca concluída não volta atrás
+          (resource.data.authorId == me() && request.resource.data.authorId == me()
+            && validPostFields(request.resource.data)
+            && !(resource.data.get('tradeStatus', null) == 'DONE' && request.resource.data.get('tradeStatus', null) != 'DONE'))
           // quem pode ver o post só altera os contadores, de 1 em 1
           || (canSeePost(resource.data) && changesOnly(['likesCount']) && stepOfOne('likesCount'))
           || (canSeePost(resource.data) && changesOnly(['commentsCount']) && stepOfOne('commentsCount'))
@@ -217,11 +258,76 @@ service cloud.firestore {
       }
     }
 
+    // ---------- clubes do livro ----------
+    match /clubs/{clubId} {
+      function clubPath() { return /databases/$(database)/documents/clubs/$(clubId); }
+      function memberPath(uid) { return /databases/$(database)/documents/clubs/$(clubId)/members/$(uid); }
+      function validClub(d) {
+        return d.name is string && d.name.size() >= 3 && d.name.size() <= 60
+            && d.get('description', '') is string && d.get('description', '').size() <= 300
+            && d.get('city', '') is string && d.get('city', '').size() <= 60;
+      }
+
+      allow read: if signedIn();
+      // Quem cria já entra como primeiro membro, na mesma gravação.
+      allow create: if signedIn()
+          && autoId(clubId)
+          && request.resource.data.ownerId == me()
+          && request.resource.data.membersCount == 1
+          && validBook(request.resource.data.get('bookOfMonth', null))
+          && validClub(request.resource.data)
+          && existsAfter(memberPath(me()));
+      allow update: if signedIn() && (
+          // o dono muda os dados e o livro do mês, nunca o dono nem o contador
+          (resource.data.ownerId == me()
+            && changesOnly(['name', 'description', 'city', 'cityKey', 'bookOfMonth'])
+            && validClub(request.resource.data)
+            && validBook(request.resource.data.get('bookOfMonth', null)))
+          // o contador só sobe junto com a entrada da pessoa e só desce junto com a saída
+          || (changesOnly(['membersCount'])
+            && request.resource.data.membersCount == resource.data.membersCount + 1
+            && !exists(memberPath(me())) && existsAfter(memberPath(me())))
+          || (changesOnly(['membersCount'])
+            && request.resource.data.membersCount == resource.data.membersCount - 1
+            && exists(memberPath(me())) && !existsAfter(memberPath(me())))
+        );
+      allow delete: if signedIn() && resource.data.ownerId == me();
+
+      match /members/{uid} {
+        allow read: if signedIn();
+        // Entrar e sair sempre acompanham o contador do clube (ou a criação do clube).
+        allow create: if signedIn() && uid == me()
+            && request.resource.data.uid == me()
+            && (!exists(clubPath())
+                || getAfter(clubPath()).data.membersCount == get(clubPath()).data.membersCount + 1);
+        // O dono não sai do próprio clube (para o clube não ficar sem dono).
+        allow delete: if signedIn() && uid == me()
+            && get(clubPath()).data.ownerId != me()
+            && getAfter(clubPath()).data.membersCount == get(clubPath()).data.membersCount - 1;
+        allow update: if false;
+      }
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && exists(memberPath(me()));
+        allow create: if signedIn()
+            && exists(memberPath(me()))
+            && request.resource.data.senderId == me()
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 1000
+            && request.resource.data.get('senderName', '') is string
+            && request.resource.data.get('senderName', '').size() <= 100;
+        allow delete: if signedIn() && resource.data.senderId == me();
+        allow update: if false;
+      }
+    }
+
     // ---------- denúncias ----------
     match /contentReports/{reportId} {
       allow create: if signedIn()
           && request.resource.data.reporterId == me()
           && request.resource.data.reporterId != request.resource.data.targetId
+          && safeId(request.resource.data.targetId)
           && request.resource.data.status == 'PENDING';
       allow read, update: if isAdmin();
       allow delete: if false;

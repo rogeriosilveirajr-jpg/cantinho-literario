@@ -18,6 +18,12 @@ const firebaseConfig = {
 // Se a apiKey estiver preenchida de verdade, ativamos o Firebase.
 const FIREBASE_CONFIGURED = firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_SUA_API_KEY_AQUI";
 
+// Testes automáticos: em localhost com ?emulador no endereço, o app usa os emuladores locais do
+// Firebase (npm run test:e2e) e nunca toca no banco real.
+const USE_EMULATOR = ['localhost', '127.0.0.1'].includes(location.hostname)
+  && new URLSearchParams(location.search).has('emulador');
+if (USE_EMULATOR) firebaseConfig.projectId = 'demo-cantinho';
+
 let app, auth, db, storage;
 
 if (FIREBASE_CONFIGURED) {
@@ -26,6 +32,10 @@ if (FIREBASE_CONFIGURED) {
   auth = firebase.auth();
   db = firebase.firestore();
   storage = firebase.storage();
+  if (USE_EMULATOR) {
+    auth.useEmulator('http://127.0.0.1:9099');
+    db.useEmulator('127.0.0.1', 8080);
+  }
 
   console.log("🔥 Firebase conectado com sucesso!");
 } else {
