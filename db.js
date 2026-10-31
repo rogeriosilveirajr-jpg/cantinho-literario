@@ -91,7 +91,7 @@ function loadFeed(refresh = false) {
       FEED_LOADING = false;
       console.error('Feed error:', err);
       container.querySelector('.skeleton-wrap')?.remove();
-      container.innerHTML = '<p style="text-align:center;color:#B0A090;padding:40px">Erro ao carregar feed 😕<br/><button onclick="loadFeed(true)" style="margin-top:12px;color:#C8714A;font-weight:600">Tentar novamente</button></p>';
+      container.innerHTML = '<p style="text-align:center;color:#9CAFA0;padding:40px">Erro ao carregar feed 😕<br/><button onclick="loadFeed(true)" style="margin-top:12px;color:#2E7D32;font-weight:600">Tentar novamente</button></p>';
     });
 }
 
@@ -266,7 +266,7 @@ function openCommentsFor(postId) {
 function loadComments(postId) {
   const list = document.querySelector('.comments-list');
   if (!list) return;
-  list.innerHTML = '<p style="color:#B0A090;font-size:.82rem;text-align:center;padding:20px">Carregando...</p>';
+  list.innerHTML = '<p style="color:#9CAFA0;font-size:.82rem;text-align:center;padding:20px">Carregando...</p>';
 
   if (!FIREBASE_CONFIGURED) {
     list.innerHTML = `
@@ -283,7 +283,7 @@ function loadComments(postId) {
     .onSnapshot(snap => {
       list.innerHTML = '';
       if (snap.empty) {
-        list.innerHTML = '<p style="color:#B0A090;font-size:.82rem;text-align:center;padding:20px">Seja o primeiro a comentar!</p>';
+        list.innerHTML = '<p style="color:#9CAFA0;font-size:.82rem;text-align:center;padding:20px">Seja o primeiro a comentar!</p>';
         return;
       }
       snap.docs.forEach(doc => {
@@ -294,7 +294,7 @@ function loadComments(postId) {
       list.scrollTop = list.scrollHeight;
     }, err => {
       console.error('Comments error:', err);
-      list.innerHTML = '<p style="text-align:center;color:#B0A090;padding:20px">Erro ao carregar comentários</p>';
+      list.innerHTML = '<p style="text-align:center;color:#9CAFA0;padding:20px">Erro ao carregar comentários</p>';
     });
 }
 
@@ -384,8 +384,8 @@ async function followUserDB(targetId, targetBtn) {
     showToast(msg);
     if (targetBtn) { 
       targetBtn.textContent = isPrivate ? 'Solicitado' : 'Seguindo'; 
-      targetBtn.style.background = '#F0E8D6';
-      targetBtn.style.color = '#8A7060';
+      targetBtn.style.background = '#E8F2E8';
+      targetBtn.style.color = '#6B7F70';
       targetBtn.setAttribute('data-following', 'true');
     }
     
@@ -428,7 +428,7 @@ async function unfollowUserDB(targetId, targetBtn) {
       if (targetBtn) {
         targetBtn.textContent = 'Seguir';
         targetBtn.style.background = 'transparent';
-        targetBtn.style.color = '#C8714A';
+        targetBtn.style.color = '#2E7D32';
         targetBtn.setAttribute('data-following', 'false');
       }
     }
@@ -456,7 +456,7 @@ function renderMyProfile() {
   if (!APP_USER) return;
 
   // 1. Atualiza Avatar
-  const avatarUrl = APP_USER.avatarUrl || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(APP_USER.displayName || 'U') + '&background=E8A048&color=fff');
+  const avatarUrl = APP_USER.avatarUrl || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(APP_USER.displayName || 'U') + '&background=43A047&color=fff');
   document.querySelectorAll('#profile-av-img, #ep-av-img, #my-tnav-avatar').forEach(el => el.src = avatarUrl);
   
   // 2. Atualiza Capa (Lógica corrigida)
@@ -528,7 +528,7 @@ function renderMyProfile() {
         `<span style="color:#C64747; background:#FCEEEB; padding:4px 12px; border-radius:16px; font-size:0.8rem; font-weight:bold; display:inline-block; margin-right:6px; margin-bottom:6px;">${escHtml(g)}</span>`
       ).join('');
     } else {
-      genresContainer.innerHTML = '<span style="color:#8A7060; font-size:0.8rem;">Nenhum gênero adicionado.</span>';
+      genresContainer.innerHTML = '<span style="color:#6B7F70; font-size:0.8rem;">Nenhum gênero adicionado.</span>';
     }
   }
 
@@ -720,7 +720,7 @@ async function loadMyPosts() {
   const container = document.getElementById('pt-posts');
   if (!container || !APP_USER || !FIREBASE_CONFIGURED) return;
 
-  container.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Carregando suas publicações...</p>';
+  container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Carregando suas publicações...</p>';
 
   try {
     const postsSnap = await db.collection('posts')
@@ -741,7 +741,7 @@ async function loadMyPosts() {
     const grid = container.querySelector('.posts-grid');
     
     if (postsList.length === 0) {
-      container.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Você ainda não publicou nada. 📸</p>';
+      container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Você ainda não publicou nada. 📸</p>';
       return;
     }
 
@@ -753,7 +753,7 @@ async function loadMyPosts() {
     }
   } catch (err) {
     console.error('Erro ao carregar meus posts:', err);
-    container.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Erro ao carregar publicações.</p>';
+    container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Erro ao carregar publicações.</p>';
   }
 }
 
@@ -812,11 +812,11 @@ function openModeration() {
 async function loadReports() {
   const box = document.getElementById('moderation-list');
   if (!box) return;
-  box.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Carregando...</p>';
+  box.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Carregando...</p>';
   try {
     const snap = await db.collection('contentReports').where('status', '==', 'PENDING').limit(50).get();
     if (snap.empty) {
-      box.innerHTML = '<p style="color:#B0A090;text-align:center;padding:30px;">Nenhuma denúncia pendente 🎉</p>';
+      box.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:30px;">Nenhuma denúncia pendente 🎉</p>';
       return;
     }
     const items = await Promise.all(snap.docs.map(async r => {
@@ -835,12 +835,12 @@ async function loadReports() {
       return `
         <div data-report="${escHtml(id)}" style="background:#fff;border:1px solid rgba(232,223,206,0.8);border-radius:12px;padding:12px;margin-bottom:10px;">
           <div style="font-size:.78rem;color:#C64747;font-weight:700;">Motivo: ${escHtml(rep.reason || '—')}</div>
-          <div style="font-size:.75rem;color:#B0A090;margin-bottom:8px;">${when}</div>
-          ${post ? `<div style="font-size:.8rem;color:#8A7060;margin-bottom:4px;">Post de <b>${author}</b>:</div>` : ''}
-          <div style="font-size:.88rem;color:#1C1008;white-space:pre-wrap;margin-bottom:10px;">${text}</div>
+          <div style="font-size:.75rem;color:#9CAFA0;margin-bottom:8px;">${when}</div>
+          ${post ? `<div style="font-size:.8rem;color:#6B7F70;margin-bottom:4px;">Post de <b>${author}</b>:</div>` : ''}
+          <div style="font-size:.88rem;color:#1F2A21;white-space:pre-wrap;margin-bottom:10px;">${text}</div>
           <div style="display:flex;gap:8px;">
             ${post ? `<button onclick="resolveReport('${escHtml(id)}', '${escHtml(rep.targetId)}', true)" style="background:#C64747;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Remover post</button>` : ''}
-            <button onclick="resolveReport('${escHtml(id)}', null, false)" style="background:#F0E8D6;color:#8A7060;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Dispensar</button>
+            <button onclick="resolveReport('${escHtml(id)}', null, false)" style="background:#E8F2E8;color:#6B7F70;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Dispensar</button>
           </div>
         </div>`;
     }).join('');
@@ -1113,17 +1113,17 @@ function renderFeedSkeleton(container) {
     ${[0,1,2].map(() => `
     <div class="post-card" style="animation:none;">
       <div class="pc-header" style="padding:12px 12px 8px">
-        <div style="width:40px;height:40px;border-radius:50%;background:#E8DFCE;flex-shrink:0;animation:shimmer 1.5s ease-in-out infinite;"></div>
+        <div style="width:40px;height:40px;border-radius:50%;background:#DCE8DC;flex-shrink:0;animation:shimmer 1.5s ease-in-out infinite;"></div>
         <div style="flex:1;margin-left:10px">
-          <div style="height:12px;border-radius:6px;background:#E8DFCE;margin-bottom:6px;width:40%;animation:shimmer 1.5s ease-in-out infinite;"></div>
-          <div style="height:10px;border-radius:5px;background:#F0E8D6;width:25%;animation:shimmer 1.5s ease-in-out infinite 0.1s;"></div>
+          <div style="height:12px;border-radius:6px;background:#DCE8DC;margin-bottom:6px;width:40%;animation:shimmer 1.5s ease-in-out infinite;"></div>
+          <div style="height:10px;border-radius:5px;background:#E8F2E8;width:25%;animation:shimmer 1.5s ease-in-out infinite 0.1s;"></div>
         </div>
       </div>
-      <div style="margin:0 24px;aspect-ratio:3/4;background:#E8DFCE;border-radius:10px;animation:shimmer 1.5s ease-in-out infinite 0.2s;"></div>
+      <div style="margin:0 24px;aspect-ratio:3/4;background:#DCE8DC;border-radius:10px;animation:shimmer 1.5s ease-in-out infinite 0.2s;"></div>
       <div style="padding:12px">
-        <div style="height:11px;border-radius:5px;background:#E8DFCE;margin-bottom:8px;width:90%;animation:shimmer 1.5s ease-in-out infinite 0.3s;"></div>
-        <div style="height:11px;border-radius:5px;background:#E8DFCE;margin-bottom:8px;width:75%;animation:shimmer 1.5s ease-in-out infinite 0.4s;"></div>
-        <div style="height:11px;border-radius:5px;background:#E8DFCE;width:55%;animation:shimmer 1.5s ease-in-out infinite 0.5s;"></div>
+        <div style="height:11px;border-radius:5px;background:#DCE8DC;margin-bottom:8px;width:90%;animation:shimmer 1.5s ease-in-out infinite 0.3s;"></div>
+        <div style="height:11px;border-radius:5px;background:#DCE8DC;margin-bottom:8px;width:75%;animation:shimmer 1.5s ease-in-out infinite 0.4s;"></div>
+        <div style="height:11px;border-radius:5px;background:#DCE8DC;width:55%;animation:shimmer 1.5s ease-in-out infinite 0.5s;"></div>
       </div>
     </div>`).join('')}
   </div>`;
@@ -1143,9 +1143,9 @@ function renderDemoFeed() {
 
 function emptyFeedHtml() {
   return `
-  <div style="text-align:center;padding:60px 24px;color:#8A7060;">
+  <div style="text-align:center;padding:60px 24px;color:#6B7F70;">
     <div style="font-size:3rem;margin-bottom:12px">📚</div>
-    <h3 style="font-family:'Lora',serif;color:#2C2016;margin-bottom:8px">Seu feed está vazio</h3>
+    <h3 style="font-family:'Lora',serif;color:#22302A;margin-bottom:8px">Seu feed está vazio</h3>
     <p style="font-size:.88rem;line-height:1.6;margin-bottom:20px">Siga outros leitores para ver as publicações deles aqui!</p>
     <button onclick="goTo('search')" style="background:var(--terracotta);color:#fff;padding:10px 24px;border-radius:999px;font-weight:700;font-size:.88rem;">Descobrir Leitores</button>
   </div>`;
@@ -1206,16 +1206,16 @@ async function loadFollowRequests() {
       return { followerId, name: u.displayName || 'Leitor', handle: u.handle || '', avatar: u.avatarUrl || 'avatar-placeholder.svg' };
     }));
 
-    box.innerHTML = `<div style="font-size:.78rem;font-weight:600;color:#8A7060;text-transform:uppercase;letter-spacing:.05em;margin:4px 0 8px;">Pedidos para seguir (${rows.length})</div>` +
+    box.innerHTML = `<div style="font-size:.78rem;font-weight:600;color:#6B7F70;text-transform:uppercase;letter-spacing:.05em;margin:4px 0 8px;">Pedidos para seguir (${rows.length})</div>` +
       rows.map(r => `
         <div data-request="${escHtml(r.followerId)}" style="display:flex;align-items:center;gap:10px;background:#fff;padding:10px 12px;border-radius:12px;border:1px solid rgba(232,223,206,0.7);margin-bottom:8px;">
           <img src="${escHtml(r.avatar)}" onerror="this.src='avatar-placeholder.svg'" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"/>
           <div style="flex:1;min-width:0;cursor:pointer;" onclick="openUserProfile('${escHtml(r.followerId)}')">
-            <div style="font-weight:700;color:#1C1008;font-size:.9rem;">${escHtml(r.name)}</div>
-            <div style="color:#B0A090;font-size:.78rem;">@${escHtml(r.handle)}</div>
+            <div style="font-weight:700;color:#1F2A21;font-size:.9rem;">${escHtml(r.name)}</div>
+            <div style="color:#9CAFA0;font-size:.78rem;">@${escHtml(r.handle)}</div>
           </div>
-          <button onclick="answerFollowRequest('${escHtml(r.followerId)}', true)" style="background:#C8714A;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Aceitar</button>
-          <button onclick="answerFollowRequest('${escHtml(r.followerId)}', false)" style="background:#F0E8D6;color:#8A7060;border:none;border-radius:20px;padding:6px 12px;font-weight:700;font-size:.8rem;cursor:pointer;">Recusar</button>
+          <button onclick="answerFollowRequest('${escHtml(r.followerId)}', true)" style="background:#2E7D32;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-weight:700;font-size:.8rem;cursor:pointer;">Aceitar</button>
+          <button onclick="answerFollowRequest('${escHtml(r.followerId)}', false)" style="background:#E8F2E8;color:#6B7F70;border:none;border-radius:20px;padding:6px 12px;font-weight:700;font-size:.8rem;cursor:pointer;">Recusar</button>
         </div>`).join('');
   } catch (err) {
     console.error('Erro ao carregar pedidos para seguir:', err);
@@ -1257,7 +1257,7 @@ function loadNotifications() {
   }
   DB_LISTENERS.notifs_user = APP_USER.uid; 
 
-  container.innerHTML = '<p style="color:#B0A090;font-size:.85rem;text-align:center;padding:20px;">Carregando...</p>';
+  container.innerHTML = '<p style="color:#9CAFA0;font-size:.85rem;text-align:center;padding:20px;">Carregando...</p>';
 
   DB_LISTENERS.notifs = db.collection('users')
     .doc(APP_USER.uid)
@@ -1267,7 +1267,7 @@ function loadNotifications() {
     .onSnapshot(snap => {
       container.innerHTML = '';
       if (snap.empty) {
-        container.innerHTML = '<p style="color:#B0A090;font-size:.85rem;text-align:center;padding:40px;">Nenhuma notificação ainda. ☕</p>';
+        container.innerHTML = '<p style="color:#9CAFA0;font-size:.85rem;text-align:center;padding:40px;">Nenhuma notificação ainda. ☕</p>';
         return;
       }
       
@@ -1279,13 +1279,13 @@ function loadNotifications() {
         const avatar = escHtml(d.senderAvatar || 'avatar-placeholder.svg');
         
         const html = `
-          <div onclick="${action}" style="cursor:pointer;display:flex;align-items:center;padding:14px 0;border-bottom:1px solid rgba(232,223,206,0.5);${d.read ? 'opacity:0.7;' : ''} transition:background 0.2s;" onmouseover="this.style.background='#F0E8D6'" onmouseout="this.style.background='transparent'">
+          <div onclick="${action}" style="cursor:pointer;display:flex;align-items:center;padding:14px 0;border-bottom:1px solid rgba(232,223,206,0.5);${d.read ? 'opacity:0.7;' : ''} transition:background 0.2s;" onmouseover="this.style.background='#E8F2E8'" onmouseout="this.style.background='transparent'">
             <img src="${avatar}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:12px;" onerror="this.src='avatar-placeholder.svg'"/>
             <div style="flex:1;">
-              <p style="font-size:.9rem;color:#1C1008;margin:0;">${safeNotifMessage(d.message)}</p>
-              <p style="font-size:.75rem;color:#B0A090;margin:4px 0 0;">${timeStr}</p>
+              <p style="font-size:.9rem;color:#1F2A21;margin:0;">${safeNotifMessage(d.message)}</p>
+              <p style="font-size:.75rem;color:#9CAFA0;margin:4px 0 0;">${timeStr}</p>
             </div>
-            ${!d.read ? `<div style="width:8px;height:8px;background-color:#C8714A;border-radius:50%;margin-left:10px;"></div>` : ''}
+            ${!d.read ? `<div style="width:8px;height:8px;background-color:#2E7D32;border-radius:50%;margin-left:10px;"></div>` : ''}
           </div>
         `;
         container.insertAdjacentHTML('beforeend', html);
@@ -1313,7 +1313,7 @@ async function performSearch() {
   if (defaultView) defaultView.style.display = 'none';
   if (resultsView) {
     resultsView.style.display = 'flex';
-    resultsView.innerHTML = '<p style="text-align:center;color:#B0A090;padding:20px;">Buscando...</p>';
+    resultsView.innerHTML = '<p style="text-align:center;color:#9CAFA0;padding:20px;">Buscando...</p>';
   }
 
   if (!FIREBASE_CONFIGURED) return;
@@ -1333,11 +1333,11 @@ async function performSearch() {
       });
 
       if (results.length === 0) {
-        resultsView.innerHTML = '<p style="text-align:center;color:#B0A090;padding:20px;">Nenhum usuário encontrado 😕</p>';
+        resultsView.innerHTML = '<p style="text-align:center;color:#9CAFA0;padding:20px;">Nenhum usuário encontrado 😕</p>';
         return;
       }
 
-      resultsView.innerHTML = '<div style="font-size:.78rem;font-weight:600;color:#8A7060;text-transform:uppercase;letter-spacing:.05em;margin-bottom:-4px;">Leitores encontrados</div>';
+      resultsView.innerHTML = '<div style="font-size:.78rem;font-weight:600;color:#6B7F70;text-transform:uppercase;letter-spacing:.05em;margin-bottom:-4px;">Leitores encontrados</div>';
       for (const u of results) {
         let isFollowing = false;
         if (APP_USER) {
@@ -1351,9 +1351,9 @@ async function performSearch() {
         let btnHtml = '';
         if (u.id !== APP_USER?.uid) {
           if (isFollowing) {
-            btnHtml = `<button data-following="true" onclick="toggleFollow(this, '${u.id}')" style="background:#F0E8D6;color:#8A7060;border:1.5px solid transparent;border-radius:20px;padding:5px 14px;font-weight:700;font-size:.8rem;cursor:pointer;transition:all 0.2s;">Seguindo</button>`;
+            btnHtml = `<button data-following="true" onclick="toggleFollow(this, '${u.id}')" style="background:#E8F2E8;color:#6B7F70;border:1.5px solid transparent;border-radius:20px;padding:5px 14px;font-weight:700;font-size:.8rem;cursor:pointer;transition:all 0.2s;">Seguindo</button>`;
           } else {
-            btnHtml = `<button data-following="false" onclick="toggleFollow(this, '${u.id}')" style="background:transparent;color:#C8714A;border:1.5px solid #C8714A;border-radius:20px;padding:5px 14px;font-weight:700;font-size:.8rem;cursor:pointer;transition:all 0.2s;">Seguir</button>`;
+            btnHtml = `<button data-following="false" onclick="toggleFollow(this, '${u.id}')" style="background:transparent;color:#2E7D32;border:1.5px solid #2E7D32;border-radius:20px;padding:5px 14px;font-weight:700;font-size:.8rem;cursor:pointer;transition:all 0.2s;">Seguir</button>`;
           }
         }
       
@@ -1361,8 +1361,8 @@ async function performSearch() {
           <div style="display:flex;align-items:center;background:#fff;padding:12px;border-radius:12px;border:1px solid rgba(232,223,206,0.5);">
             <img src="${escHtml(u.avatarUrl || 'avatar-placeholder.svg')}" onclick="openUserProfile('${u.id}')" alt="" onerror="this.src='avatar-placeholder.svg'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;margin-right:12px;cursor:pointer;"/>
             <div style="flex:1;cursor:pointer;" onclick="openUserProfile('${u.id}')">
-              <p style="margin:0;font-weight:700;color:#1C1008;font-size:.95rem;">${escHtml(u.displayName || 'Leitor')}</p>
-              <p style="margin:0;font-size:.85rem;color:#8A7060;">@${escHtml(u.handle || 'leitor')}</p>
+              <p style="margin:0;font-weight:700;color:#1F2A21;font-size:.95rem;">${escHtml(u.displayName || 'Leitor')}</p>
+              <p style="margin:0;font-size:.85rem;color:#6B7F70;">@${escHtml(u.handle || 'leitor')}</p>
             </div>
             ${btnHtml}
           </div>
@@ -1371,7 +1371,7 @@ async function performSearch() {
       }
     } catch (err) {
       console.error('Search error:', err);
-      resultsView.innerHTML = '<p style="text-align:center;color:#B0A090;padding:20px;">Erro na busca</p>';
+      resultsView.innerHTML = '<p style="text-align:center;color:#9CAFA0;padding:20px;">Erro na busca</p>';
     }
   }, 300); 
 }
@@ -1390,7 +1390,7 @@ async function openUserProfile(userId) {
   
   openSheet('sh-user-profile');
   
-  document.getElementById('up-feed-container').innerHTML = '<p style="color:#B0A090;text-align:center;">Carregando...</p>';
+  document.getElementById('up-feed-container').innerHTML = '<p style="color:#9CAFA0;text-align:center;">Carregando...</p>';
   document.getElementById('up-btn-row').innerHTML = '';
   
   try {
@@ -1440,20 +1440,20 @@ async function openUserProfile(userId) {
       
       let btnHtml = '';
       if (isFollowing) {
-        btnHtml = `<button data-following="true" onclick="toggleFollow(this, '${userId}')" style="background:#F0E8D6;color:#8A7060;border:1.5px solid transparent;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;">Seguindo</button>`;
+        btnHtml = `<button data-following="true" onclick="toggleFollow(this, '${userId}')" style="background:#E8F2E8;color:#6B7F70;border:1.5px solid transparent;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;">Seguindo</button>`;
       } else if (followStatus === 'PENDING') {
-        btnHtml = `<button data-following="false" onclick="toggleFollow(this, '${userId}')" style="background:#F0E8D6;color:#8A7060;border:1.5px solid transparent;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;">Solicitado</button>`;
+        btnHtml = `<button data-following="false" onclick="toggleFollow(this, '${userId}')" style="background:#E8F2E8;color:#6B7F70;border:1.5px solid transparent;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;">Solicitado</button>`;
       } else {
-        btnHtml = `<button data-following="false" onclick="toggleFollow(this, '${userId}')" style="background:transparent;color:#C8714A;border:1.5px solid #C8714A;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;">Seguir</button>`;
+        btnHtml = `<button data-following="false" onclick="toggleFollow(this, '${userId}')" style="background:transparent;color:#2E7D32;border:1.5px solid #2E7D32;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;">Seguir</button>`;
       }
       const safeName = (u.displayName || 'Leitor').replace(/'/g, "\\'");
       const safeAv = (u.avatarUrl || 'avatar-placeholder.svg').replace(/'/g, "\\'");
-      btnHtml += ` <button onclick="closeSheet('sh-user-profile'); startChat('${userId}', '${safeName}', '${safeAv}')" style="background:#F4EFEB;color:#C8714A;border:1.5px solid transparent;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;margin-left:8px;">Mensagem</button>`;
+      btnHtml += ` <button onclick="closeSheet('sh-user-profile'); startChat('${userId}', '${safeName}', '${safeAv}')" style="background:#EEF5EE;color:#2E7D32;border:1.5px solid transparent;border-radius:20px;padding:6px 20px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all 0.2s;margin-left:8px;">Mensagem</button>`;
       document.getElementById('up-btn-row').innerHTML = btnHtml;
     }
     
     if (u.isPrivate && (!APP_USER || (APP_USER.uid !== userId && !isFollowing))) {
-       document.getElementById('up-feed-container').innerHTML = '<div style="text-align:center;padding:40px 20px;"><span style="font-size:2.5rem;display:block;margin-bottom:10px;">🔒</span><h3 style="color:#2C2016;font-family:\'Lora\',serif;">Esta conta é privada</h3><p style="color:#B0A090;font-size:0.9rem;">Siga para ver as publicações desta pessoa.</p></div>';
+       document.getElementById('up-feed-container').innerHTML = '<div style="text-align:center;padding:40px 20px;"><span style="font-size:2.5rem;display:block;margin-bottom:10px;">🔒</span><h3 style="color:#22302A;font-family:\'Lora\',serif;">Esta conta é privada</h3><p style="color:#9CAFA0;font-size:0.9rem;">Siga para ver as publicações desta pessoa.</p></div>';
        return;
     }
     
@@ -1474,7 +1474,7 @@ async function openUserProfile(userId) {
     const feedContainer = document.getElementById('up-feed-container');
     feedContainer.innerHTML = '';
     if (postsList.length === 0) {
-      feedContainer.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Nenhuma publicação ainda.</p>';
+      feedContainer.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Nenhuma publicação ainda.</p>';
     } else {
       for (const p of postsList) {
         if (p.isNotification) continue;
@@ -1499,12 +1499,12 @@ async function openSinglePost(postId) {
   
   openSheet('sh-single-post');
   const container = document.getElementById('sp-container');
-  container.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Carregando publicação...</p>';
+  container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Carregando publicação...</p>';
   
   try {
     const docSnap = await db.collection('posts').doc(postId).get();
     if (!docSnap.exists) {
-      container.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Publicação não encontrada ou foi excluída.</p>';
+      container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Publicação não encontrada ou foi excluída.</p>';
       return;
     }
     
@@ -1516,7 +1516,7 @@ async function openSinglePost(postId) {
     
   } catch (err) {
     console.error('Erro ao carregar post:', err);
-    container.innerHTML = '<p style="color:#B0A090;text-align:center;padding:20px;">Erro ao carregar.</p>';
+    container.innerHTML = '<p style="color:#9CAFA0;text-align:center;padding:20px;">Erro ao carregar.</p>';
   }
 }
 
@@ -1555,7 +1555,7 @@ function renderShelf(containerId, books) {
   if (!container) return;
   
   if (books.length === 0) {
-    container.innerHTML = '<p style="color:#B0A090; font-size:0.9rem; text-align:center; margin-top:20px;">Nenhum livro nesta estante.</p>';
+    container.innerHTML = '<p style="color:#9CAFA0; font-size:0.9rem; text-align:center; margin-top:20px;">Nenhum livro nesta estante.</p>';
     return;
   }
   
@@ -1674,7 +1674,7 @@ function loadChats() {
   if (!APP_USER || !FIREBASE_CONFIGURED) return;
   const container = document.getElementById('chats-list-container');
   if (!container) return;
-  container.innerHTML = '<p style="text-align:center;color:#B0A090;">Carregando mensagens...</p>';
+  container.innerHTML = '<p style="text-align:center;color:#9CAFA0;">Carregando mensagens...</p>';
   
   if (CHATS_LIST_UNSUB) CHATS_LIST_UNSUB();
   
@@ -1683,7 +1683,7 @@ function loadChats() {
     .onSnapshot((snapshot) => {
       container.innerHTML = '';
       if (snapshot.empty) {
-        container.innerHTML = '<p style="text-align:center;color:#B0A090;margin-top:20px;">Nenhuma conversa ainda.</p>';
+        container.innerHTML = '<p style="text-align:center;color:#9CAFA0;margin-top:20px;">Nenhuma conversa ainda.</p>';
         return;
       }
        
@@ -1712,7 +1712,7 @@ function loadChats() {
       });
     }, err => {
       console.error('Error loading chats:', err);
-      container.innerHTML = '<p style="text-align:center;color:#B0A090;margin-top:20px;">Não foi possível carregar as conversas. Atualize a página e verifique suas regras/índices do Firebase.</p>';
+      container.innerHTML = '<p style="text-align:center;color:#9CAFA0;margin-top:20px;">Não foi possível carregar as conversas. Atualize a página e verifique suas regras/índices do Firebase.</p>';
     });}
 
 function openChatRoom(chatId, otherUserName, otherUserAvatar) {
@@ -1788,7 +1788,7 @@ async function loadFollowersForChat() {
   const container = document.getElementById('new-chat-list');
   if (!container) return;
   
-  container.innerHTML = '<p style="text-align:center; color:#B0A090; padding:20px;">Carregando seguidores...</p>';
+  container.innerHTML = '<p style="text-align:center; color:#9CAFA0; padding:20px;">Carregando seguidores...</p>';
   followersLoaded = true;
   
   try {
@@ -1803,7 +1803,7 @@ async function loadFollowersForChat() {
     followersSnap.forEach(d => { if (d.data().status === 'ACCEPTED') userIds.add(d.data().followerId); });
     
     if (userIds.size === 0) {
-      container.innerHTML = '<p style="text-align:center; color:#B0A090; padding:20px;">Você ainda não tem conexões. Comece a seguir leitores para conversar!</p>';
+      container.innerHTML = '<p style="text-align:center; color:#9CAFA0; padding:20px;">Você ainda não tem conexões. Comece a seguir leitores para conversar!</p>';
       return;
     }
     
@@ -1821,7 +1821,7 @@ async function loadFollowersForChat() {
     
   } catch (err) {
     console.error('Erro ao carregar seguidores:', err);
-    container.innerHTML = '<p style="text-align:center; color:#B0A090; padding:20px;">Erro ao carregar lista.</p>';
+    container.innerHTML = '<p style="text-align:center; color:#9CAFA0; padding:20px;">Erro ao carregar lista.</p>';
   }
 }
 
@@ -1850,7 +1850,7 @@ function renderChatFollowers(list) {
   if (!container) return;
   
   if (list.length === 0) {
-    container.innerHTML = '<p style="text-align:center; color:#B0A090; padding:20px;">Nenhum usuário encontrado.</p>';
+    container.innerHTML = '<p style="text-align:center; color:#9CAFA0; padding:20px;">Nenhum usuário encontrado.</p>';
     return;
   }
   
@@ -1861,11 +1861,11 @@ function renderChatFollowers(list) {
     const safeHandle = escHtml(u.handle || 'leitor');
      
     html += `
-      <div onclick="resetChatSearch(); startChat(${JSON.stringify(u.id)}, ${JSON.stringify(safeName)}, ${JSON.stringify(safeAv)})" style="display:flex; align-items:center; padding:12px; border-bottom:1px solid #E8DFCE; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#F0E8D6'" onmouseout="this.style.background='transparent'">
+      <div onclick="resetChatSearch(); startChat(${JSON.stringify(u.id)}, ${JSON.stringify(safeName)}, ${JSON.stringify(safeAv)})" style="display:flex; align-items:center; padding:12px; border-bottom:1px solid #DCE8DC; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#E8F2E8'" onmouseout="this.style.background='transparent'">
         <img src="${safeAv}" onerror="this.src='avatar-placeholder.svg'" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:12px;"/>
         <div>
-          <p style="margin:0; font-weight:600; color:#1C1008; font-size:0.95rem;">${safeName}</p>
-          <p style="margin:0; font-size:0.8rem; color:#8A7060;">@${safeHandle}</p>
+          <p style="margin:0; font-weight:600; color:#1F2A21; font-size:0.95rem;">${safeName}</p>
+          <p style="margin:0; font-size:0.8rem; color:#6B7F70;">@${safeHandle}</p>
         </div>
       </div>
     `;

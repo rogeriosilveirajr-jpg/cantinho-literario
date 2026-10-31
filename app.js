@@ -239,7 +239,7 @@ let PRIV_MODE = 'private';
 
 function pickPrivacy(mode) {
   PRIV_MODE = mode;
-  const ck = `<svg width="20" height="20" fill="#C8714A" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
+  const ck = `<svg width="20" height="20" fill="#2E7D32" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
   document.getElementById('priv-pub').classList.toggle('priv-sel', mode === 'public');
   document.getElementById('priv-priv').classList.toggle('priv-sel', mode === 'private');
   document.getElementById('pck-pub').innerHTML  = mode === 'public'  ? ck : '';
@@ -457,7 +457,7 @@ async function searchGoogleBooks(query) {
     loading.style.display = 'none';
     
     if (!data.items || data.items.length === 0) {
-      resultsDiv.innerHTML = '<p style="text-align:center; color:#8A7060;">Nenhum livro encontrado.</p>';
+      resultsDiv.innerHTML = '<p style="text-align:center; color:#6B7F70;">Nenhum livro encontrado.</p>';
       return;
     }
     
@@ -591,7 +591,7 @@ window.openPostMenuFor = function(postId, authorId) {
   if (APP_USER && APP_USER.uid === authorId) {
     html += `<button style="padding:16px; background:#FFEBEB; color:#D32F2F; border:none; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="deletePost('${postId}')">Excluir Publicação</button>`;
   } else {
-    html += `<button style="padding:16px; background:#F0E8D6; color:#8A7060; border:none; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="showToast('Post denunciado.'); closeSheet('sh-post-menu');">Denunciar Publicação</button>`;
+    html += `<button style="padding:16px; background:#E8F2E8; color:#6B7F70; border:none; border-radius:12px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="showToast('Post denunciado.'); closeSheet('sh-post-menu');">Denunciar Publicação</button>`;
   }
   
   actionsDiv.innerHTML = html;
