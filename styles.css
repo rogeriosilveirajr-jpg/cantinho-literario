@@ -1464,6 +1464,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
   .sheet-overlay { align-items: center; justify-content: center; }
   .sheet-box { max-width: 560px; border-radius: 22px; }
+
+  /* Com mouse não há gesto de arrastar: mostra uma barra de rolagem fina nas janelas e telas */
+  .sh-body, .screen { scrollbar-width: thin; scrollbar-color: var(--amber-light) transparent; }
+  .sh-body::-webkit-scrollbar, .screen::-webkit-scrollbar { display: block; width: 10px; }
+  .sh-body::-webkit-scrollbar-thumb, .screen::-webkit-scrollbar-thumb {
+    background: var(--amber-light); border-radius: var(--r-pill);
+    border: 3px solid var(--card);
+  }
+  .sh-body::-webkit-scrollbar-thumb:hover, .screen::-webkit-scrollbar-thumb:hover { background: var(--amber); }
 }
 #emoji-popup {
   position: fixed;
