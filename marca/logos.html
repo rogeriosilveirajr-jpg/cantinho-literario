@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Logos Cantinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --verde: #2E7D32; --verde-escuro: #1B5E20; --verde-claro: #81C784;
+    --fundo: #F0F7F0; --tinta: #1F2A21; --suave: #6B7F70; --cartao: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: var(--fundo); color: var(--tinta); padding: 32px 16px; }
+  h1 { font-family: 'Playfair Display', serif; color: var(--verde); text-align: center; font-size: 1.8rem; }
+  .sub { text-align: center; color: var(--suave); margin: 6px 0 28px; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; }
+  .opcao { background: var(--cartao); border-radius: 16px; box-shadow: 0 6px 24px rgba(20,50,25,.10); padding: 24px; text-align: center; }
+  .opcao h2 { font-size: 1rem; color: var(--suave); font-weight: 600; margin-bottom: 18px; letter-spacing: .04em; }
+  .perfil { width: 170px; height: 170px; margin: 0 auto; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #d6249f; }
+  .perfil svg { width: 100%; height: 100%; display: block; }
+  .rotulo { font-size: .75rem; color: var(--suave); margin: 10px 0 22px; }
+  .marca { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; background: var(--fundo); }
+  .marca svg { width: 48px; height: 48px; flex-shrink: 0; }
+  .nome { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.45rem; color: var(--verde); white-space: nowrap; }
+  .nome em { color: var(--verde-claro); }
+  .ideia { font-size: .85rem; color: var(--suave); margin-top: 16px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>Logo do Cantinho Literário</h1>
+<p class="sub">Três propostas no verde do site. Cada uma aparece como foto de perfil e como logo com o nome.</p>
+
+<!-- Símbolos reutilizáveis: cada um desenhado num quadro de 200×200 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- A: livro aberto com telhado = um "cantinho" para ler -->
+    <symbol id="logo-casinha" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="100" fill="#2E7D32"/>
+      <path d="M46 98 L100 52 L154 98" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="100" cy="84" r="8" fill="#81C784"/>
+      <path d="M100 116 C86 106 66 103 50 106 L50 146 C66 143 86 146 100 156 Z" fill="#FFFFFF"/>
+      <path d="M100 116 C114 106 134 103 150 106 L150 146 C134 143 114 146 100 156 Z" fill="#E8F5E9"/>
+    </symbol>
+
+    <!-- B: pena de caneta saindo de um livro aberto (herança do 🖋️ de maio) -->
+    <symbol id="logo-pena" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="100" fill="#2E7D32"/>
+      <path d="M100 36 L122 88 L100 122 L78 88 Z" fill="#FFFFFF"/>
+      <path d="M100 76 L100 118" stroke="#2E7D32" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="100" cy="74" r="6" fill="#2E7D32"/>
+      <path d="M100 136 C84 126 64 124 44 128 L44 154 C64 150 84 152 100 162 Z" fill="#81C784"/>
+      <path d="M100 136 C116 126 136 124 156 128 L156 154 C136 150 116 152 100 162 Z" fill="#A5D6A7"/>
+    </symbol>
+
+    <!-- C: monograma CL com um livro como base -->
+    <symbol id="logo-monograma" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="100" fill="#FFFFFF"/>
+      <circle cx="100" cy="100" r="88" fill="none" stroke="#2E7D32" stroke-width="6"/>
+      <text x="100" y="122" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="84" fill="#2E7D32">C<tspan font-style="italic" fill="#43A047">L</tspan></text>
+      <path d="M100 140 C88 133 72 131 58 134 L58 146 C72 143 88 145 100 152 Z" fill="#2E7D32"/>
+      <path d="M100 140 C112 133 128 131 142 134 L142 146 C128 143 112 145 100 152 Z" fill="#43A047"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="grade">
+  <section class="opcao">
+    <h2>OPÇÃO A · LIVRO-CASINHA</h2>
+    <div class="perfil"><svg role="img" aria-label="Logo opção A"><use href="#logo-casinha"/></svg></div>
+    <p class="rotulo">foto de perfil do Instagram</p>
+    <div class="marca"><svg aria-hidden="true"><use href="#logo-casinha"/></svg><span class="nome">Cantinho <em>Literário</em></span></div>
+    <p class="ideia">Um livro aberto debaixo de um telhado: o "cantinho" onde a comunidade se reúne para ler.</p>
+  </section>
+
+  <section class="opcao">
+    <h2>OPÇÃO B · PENA E LIVRO</h2>
+    <div class="perfil"><svg role="img" aria-label="Logo opção B"><use href="#logo-pena"/></svg></div>
+    <p class="rotulo">foto de perfil do Instagram</p>
+    <div class="marca"><svg aria-hidden="true"><use href="#logo-pena"/></svg><span class="nome">Cantinho <em>Literário</em></span></div>
+    <p class="ideia">A pena de caneta (o 🖋️ da versão de maio) sobre um livro aberto: escrever e compartilhar resenhas.</p>
+  </section>
+
+  <section class="opcao">
+    <h2>OPÇÃO C · MONOGRAMA CL</h2>
+    <div class="perfil"><svg role="img" aria-label="Logo opção C"><use href="#logo-monograma"/></svg></div>
+    <p class="rotulo">foto de perfil do Instagram</p>
+    <div class="marca"><svg aria-hidden="true"><use href="#logo-monograma"/></svg><span class="nome">Cantinho <em>Literário</em></span></div>
+    <p class="ideia">As iniciais na mesma fonte do site, com um livro como base. Mais clássico e elegante.</p>
+  </section>
+</div>
+</body>
+</html>

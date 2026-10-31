@@ -2,3 +2,5 @@ node_modules/
 .firebase/
 .env
 *.log
+.wrangler/
+*.mp4

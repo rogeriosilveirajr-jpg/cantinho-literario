@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Logos Cantinho v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  /* Paleta "Forest Natural" do briefing da skill, ajustada ao verde do site */
+  :root {
+    --floresta: #14532D; --verde: #2E7D32; --folha: #43A047; --broto: #81C784;
+    --fundo: #F0FDF4; --tinta: #052E16; --suave: #5B6F60; --cartao: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: var(--fundo); color: var(--tinta); padding: 32px 16px; }
+  h1 { font-family: 'Playfair Display', serif; color: var(--verde); text-align: center; font-size: 1.8rem; }
+  .sub { text-align: center; color: var(--suave); margin: 6px auto 28px; max-width: 640px; line-height: 1.5; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1150px; margin: 0 auto; }
+  .opcao { background: var(--cartao); border-radius: 16px; box-shadow: 0 6px 24px rgba(20,50,25,.10); padding: 24px; text-align: center; }
+  .opcao h2 { font-size: .9rem; color: var(--suave); font-weight: 700; margin-bottom: 4px; letter-spacing: .06em; }
+  .estilo { font-size: .75rem; color: var(--folha); margin-bottom: 18px; }
+  .perfil { width: 180px; height: 180px; margin: 0 auto; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #d6249f; }
+  .perfil svg { width: 100%; height: 100%; display: block; }
+  .rotulo { font-size: .72rem; color: var(--suave); margin: 10px 0 20px; }
+  .marca { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; background: var(--fundo); }
+  .marca svg { width: 52px; height: 52px; flex-shrink: 0; }
+  .nome { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.4rem; color: var(--verde); white-space: nowrap; line-height: 1; text-align: left; }
+  .nome em { color: var(--folha); }
+  .nome small { display: block; font-family: Inter, sans-serif; font-size: .58rem; font-weight: 600; letter-spacing: .14em; color: var(--suave); margin-top: 5px; }
+  .tamanhos { display: flex; align-items: end; justify-content: center; gap: 14px; margin-top: 16px; }
+  .tamanhos svg { display: block; }
+  .tamanhos span { display: block; font-size: .65rem; color: var(--suave); margin-top: 4px; }
+  .ideia { font-size: .85rem; color: var(--suave); margin-top: 16px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>Logo do Cantinho Literário · rodada 2</h1>
+<p class="sub">Feitas com o briefing da skill de design: setor Educação/livros, estilos Emblema, Mascote e Marca combinada, paleta verde Forest Natural.</p>
+
+<!-- Símbolos desenhados num quadro de 200×200 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <path id="arco-topo" d="M22 100 A78 78 0 0 1 178 100"/>
+    <path id="arco-base" d="M10 100 A90 90 0 0 0 190 100"/>
+
+    <!-- 1 · Emblema: selo circular com o nome em volta e o livro-casinha no centro -->
+    <symbol id="logo-selo" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="100" fill="#14532D"/>
+      <circle cx="100" cy="100" r="66" fill="#2E7D32"/>
+      <circle cx="100" cy="100" r="66" fill="none" stroke="#81C784" stroke-width="2"/>
+      <text font-family="Inter, sans-serif" font-weight="700" font-size="15" letter-spacing="3.2" fill="#FFFFFF">
+        <textPath href="#arco-topo" startOffset="50%" text-anchor="middle">CANTINHO LITERÁRIO</textPath>
+      </text>
+      <text font-family="Inter, sans-serif" font-weight="600" font-size="11" letter-spacing="2.6" fill="#81C784">
+        <textPath href="#arco-base" startOffset="50%" text-anchor="middle">LEITORES · RESENHAS · TROCAS</textPath>
+      </text>
+      <circle cx="17" cy="100" r="3" fill="#81C784"/>
+      <circle cx="183" cy="100" r="3" fill="#81C784"/>
+      <path d="M66 98 L100 70 L134 98" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="100" cy="88" r="5" fill="#81C784"/>
+      <path d="M100 110 C91 104 79 102 69 104 L69 130 C79 128 91 130 100 136 Z" fill="#FFFFFF"/>
+      <path d="M100 110 C109 104 121 102 131 104 L131 130 C121 128 109 130 100 136 Z" fill="#C8E6C9"/>
+    </symbol>
+
+    <!-- 2 · Mascote: coruja de óculos lendo um livro -->
+    <symbol id="logo-coruja" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="100" fill="#2E7D32"/>
+      <path d="M70 76 L60 44 L90 64 Z" fill="#F0FDF4"/>
+      <path d="M130 76 L140 44 L110 64 Z" fill="#F0FDF4"/>
+      <path d="M56 156 C50 106 64 60 100 60 C136 60 150 106 144 156 Z" fill="#F0FDF4"/>
+      <path d="M74 120 C80 112 90 110 100 112 C110 110 120 112 126 120" fill="none" stroke="#C8E6C9" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="82" cy="92" r="17" fill="#FFFFFF" stroke="#14532D" stroke-width="5"/>
+      <circle cx="118" cy="92" r="17" fill="#FFFFFF" stroke="#14532D" stroke-width="5"/>
+      <path d="M97 90 Q100 86 103 90" fill="none" stroke="#14532D" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="85" cy="96" r="6.5" fill="#14532D"/>
+      <circle cx="115" cy="96" r="6.5" fill="#14532D"/>
+      <path d="M94 108 L106 108 L100 117 Z" fill="#F4B400"/>
+      <path d="M100 132 C88 124 70 122 54 126 L54 156 C70 152 88 154 100 162 Z" fill="#81C784"/>
+      <path d="M100 132 C112 124 130 122 146 126 L146 156 C130 152 112 154 100 162 Z" fill="#A5D6A7"/>
+      <path d="M100 132 L100 162" stroke="#2E7D32" stroke-width="2.5"/>
+    </symbol>
+
+    <!-- 3 · Marca combinada: livro aberto dentro de um balão de conversa (resenhas + comunidade) -->
+    <symbol id="logo-balao" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="100" fill="#FFFFFF"/>
+      <rect x="38" y="44" width="124" height="96" rx="28" fill="#2E7D32"/>
+      <path d="M66 136 L56 166 L96 138 Z" fill="#2E7D32"/>
+      <path d="M100 78 C90 71 75 69 62 72 L62 116 C75 113 90 115 100 122 Z" fill="#FFFFFF"/>
+      <path d="M100 78 C110 71 125 69 138 72 L138 116 C125 113 110 115 100 122 Z" fill="#C8E6C9"/>
+      <path d="M70 86 L90 88 M70 96 L90 98 M70 106 L84 107" stroke="#81C784" stroke-width="3" stroke-linecap="round"/>
+      <path d="M118 84 C113 79 106 82 106 88 C106 94 118 100 118 100 C118 100 130 94 130 88 C130 82 123 79 118 84 Z" fill="#43A047"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="grade">
+  <section class="opcao">
+    <h2>1 · SELO LITERÁRIO</h2>
+    <p class="estilo">estilo Emblema</p>
+    <div class="perfil"><svg role="img" aria-label="Logo selo literário"><use href="#logo-selo"/></svg></div>
+    <p class="rotulo">foto de perfil do Instagram</p>
+    <div class="marca"><svg aria-hidden="true"><use href="#logo-selo"/></svg><span class="nome">Cantinho <em>Literário</em><small>COMUNIDADE DE LEITORES</small></span></div>
+    <div class="tamanhos">
+      <div><svg width="64" height="64"><use href="#logo-selo"/></svg><span>64px</span></div>
+      <div><svg width="32" height="32"><use href="#logo-selo"/></svg><span>32px</span></div>
+      <div><svg width="16" height="16"><use href="#logo-selo"/></svg><span>16px</span></div>
+    </div>
+    <p class="ideia">Um selo de clube do livro, com o nome em volta e o livro-casinha no centro. Clássico e com cara de "comunidade oficial".</p>
+  </section>
+
+  <section class="opcao">
+    <h2>2 · CORUJA LEITORA</h2>
+    <p class="estilo">estilo Mascote</p>
+    <div class="perfil"><svg role="img" aria-label="Logo coruja leitora"><use href="#logo-coruja"/></svg></div>
+    <p class="rotulo">foto de perfil do Instagram</p>
+    <div class="marca"><svg aria-hidden="true"><use href="#logo-coruja"/></svg><span class="nome">Cantinho <em>Literário</em><small>COMUNIDADE DE LEITORES</small></span></div>
+    <div class="tamanhos">
+      <div><svg width="64" height="64"><use href="#logo-coruja"/></svg><span>64px</span></div>
+      <div><svg width="32" height="32"><use href="#logo-coruja"/></svg><span>32px</span></div>
+      <div><svg width="16" height="16"><use href="#logo-coruja"/></svg><span>16px</span></div>
+    </div>
+    <p class="ideia">Uma coruja de óculos lendo, o símbolo clássico do saber. Simpática, fácil de lembrar e pode virar personagem nos posts.</p>
+  </section>
+
+  <section class="opcao">
+    <h2>3 · LIVRO QUE CONVERSA</h2>
+    <p class="estilo">estilo Marca combinada</p>
+    <div class="perfil"><svg role="img" aria-label="Logo livro que conversa"><use href="#logo-balao"/></svg></div>
+    <p class="rotulo">foto de perfil do Instagram</p>
+    <div class="marca"><svg aria-hidden="true"><use href="#logo-balao"/></svg><span class="nome">Cantinho <em>Literário</em><small>COMUNIDADE DE LEITORES</small></span></div>
+    <div class="tamanhos">
+      <div><svg width="64" height="64"><use href="#logo-balao"/></svg><span>64px</span></div>
+      <div><svg width="32" height="32"><use href="#logo-balao"/></svg><span>32px</span></div>
+      <div><svg width="16" height="16"><use href="#logo-balao"/></svg><span>16px</span></div>
+    </div>
+    <p class="ideia">Um livro aberto dentro de um balão de conversa, com um coração: ler, comentar e trocar com outras pessoas. Moderna, com cara de app.</p>
+  </section>
+</div>
+</body>
+</html>

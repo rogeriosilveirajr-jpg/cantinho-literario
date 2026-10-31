@@ -1,0 +1,40 @@
+<!doctype html>
+<!-- Página usada só para exportar a logo em PNG com o Chrome headless.
+     ?fundo=branco põe fundo branco (Instagram); sem parâmetro, o fundo fica transparente. -->
+<html>
+<head>
+<meta charset="utf-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=block" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: transparent; }
+  body.branco { background: #FFFFFF; }
+  img, object { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<script>
+  if (new URLSearchParams(location.search).get('fundo') === 'branco') document.body.classList.add('branco');
+</script>
+<svg viewBox="0 0 200 200" width="100%" height="100%" style="display:block">
+  <defs>
+    <path id="arco-topo" d="M22 100 A78 78 0 0 1 178 100"/>
+    <path id="arco-base" d="M10 100 A90 90 0 0 0 190 100"/>
+  </defs>
+  <circle cx="100" cy="100" r="100" fill="#14532D"/>
+  <circle cx="100" cy="100" r="66" fill="#2E7D32"/>
+  <circle cx="100" cy="100" r="66" fill="none" stroke="#81C784" stroke-width="2"/>
+  <text font-family="Inter, sans-serif" font-weight="700" font-size="15" letter-spacing="3.2" fill="#FFFFFF">
+    <textPath href="#arco-topo" startOffset="50%" text-anchor="middle">CANTINHO LITERÁRIO</textPath>
+  </text>
+  <text font-family="Inter, sans-serif" font-weight="600" font-size="11" letter-spacing="2.6" fill="#81C784">
+    <textPath href="#arco-base" startOffset="50%" text-anchor="middle">LEITORES · RESENHAS · TROCAS</textPath>
+  </text>
+  <circle cx="17" cy="100" r="3" fill="#81C784"/>
+  <circle cx="183" cy="100" r="3" fill="#81C784"/>
+  <path d="M66 98 L100 70 L134 98" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="100" cy="88" r="5" fill="#81C784"/>
+  <path d="M100 110 C91 104 79 102 69 104 L69 130 C79 128 91 130 100 136 Z" fill="#FFFFFF"/>
+  <path d="M100 110 C109 104 121 102 131 104 L131 130 C121 128 109 130 100 136 Z" fill="#C8E6C9"/>
+</svg>
+</body>
+</html>

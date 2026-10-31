@@ -1,0 +1,13 @@
+{
+  "name": "cantinho-literario",
+  "compatibility_date": "2026-09-21",
+  // Site 100% estático: login e dados continuam no Firebase (Auth + Firestore), chamados pelo navegador.
+  // O que não deve ir para o ar está listado em .assetsignore
+  "assets": {
+    "directory": "./",
+    // SPA: qualquer caminho desconhecido devolve o index.html (igual ao rewrite do firebase.json)
+    "not_found_handling": "single-page-application",
+    // Serve /index.html sem redirecionar para "/": o sw.js e o manifest pedem ./index.html
+    "html_handling": "none"
+  }
+}

@@ -84,12 +84,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   to   { opacity:1; transform:none; }
 }
 .splash-icon {
-  width: 90px; height: 90px; margin: 0 auto 18px;
-  border-radius: 22px;
+  width: 120px; height: 120px; margin: 0 auto 18px;
+  border-radius: 50%;
   box-shadow: 0 12px 40px rgba(27,94,32,.4);
   animation: iconPulse 2s ease-in-out infinite;
 }
-.splash-icon svg { width: 90px; height: 90px; }
+.splash-icon img { width: 120px; height: 120px; }
 @keyframes iconPulse {
   0%,100% { box-shadow: 0 12px 40px rgba(27,94,32,.4); }
   50%      { box-shadow: 0 16px 56px rgba(27,94,32,.7); }
@@ -126,9 +126,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow: 0 2px 10px rgba(20,50,25,.08);
 }
 .login-logo {
+  display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--font-display); font-size: 1.6rem; font-weight: 600;
   color: var(--terracotta);
 }
+.login-logo-img { width: 40px; height: 40px; }
 .login-logo em { font-style: italic; font-weight: 700; color: var(--amber); }
 
 .login-stage {
@@ -1421,6 +1423,48 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 /* ================================================================
    DESKTOP RESPONSIVE LAYOUT (Instagram Style)
    ================================================================ */
+/* Logo e textos do menu: escondidos no celular, aparecem no modo computador */
+.tnav-brand, .tnav-label { display: none; }
+
+/* Modo computador: menu lateral à esquerda, conteúdo numa coluna central e janelas no meio da tela */
+@media (min-width: 1024px) {
+  #app {
+    flex-direction: row;
+    max-width: 1000px;
+    box-shadow: 0 0 40px rgba(20,50,25,.12);
+  }
+
+  .top-nav {
+    flex-direction: column; justify-content: flex-start; align-items: stretch;
+    width: 248px; height: auto;
+    padding: 24px 14px; gap: 4px;
+    box-shadow: 1px 0 0 var(--border);
+  }
+  .tnav-brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 10px 24px;
+    font-family: var(--font-display); font-size: 1.3rem; font-weight: 600;
+    color: var(--terracotta); white-space: nowrap;
+  }
+  .tnav-brand img { width: 40px; height: 40px; }
+  .tnav-brand em { font-style: italic; font-weight: 700; color: var(--amber); }
+
+  .tnav-btn {
+    width: 100%; height: 48px;
+    justify-content: flex-start; gap: 14px;
+    padding: 0 14px;
+    border-radius: var(--r-md);
+  }
+  .tnav-btn:active { transform: none; }
+  .tnav-btn.on { background: #E8F5E9; }
+  .tnav-label { display: inline; font-size: .95rem; font-weight: 600; color: var(--ink-mid); }
+  .tnav-btn.on .tnav-label { color: var(--terracotta); }
+
+  .screen { padding-inline: max(0px, calc((100% - 680px) / 2)); }
+
+  .sheet-overlay { align-items: center; justify-content: center; }
+  .sheet-box { max-width: 560px; border-radius: 22px; }
+}
 #emoji-popup {
   position: fixed;
   z-index: 10000;

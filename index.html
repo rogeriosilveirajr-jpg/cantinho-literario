@@ -15,8 +15,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <link rel="manifest" href="manifest.json"/>
-  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMTkyIDE5MiI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIGZpbGw9IiNDODcxNEEiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNjAiIGZpbGw9IiNmZmYiPkNMPC90ZXh0Pjwvc3ZnPg=="/>
-  <meta name="theme-color" content="#43A047"/>
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
+  <meta name="theme-color" content="#2E7D32"/>
   <meta name="description" content="Cantinho Literário — rede social acolhedora para leitores."/>
   <meta name="color-scheme" content="light"/>
   <meta property="og:title" content="Cantinho Literário"/>
@@ -37,12 +37,7 @@
 <div id="splash" class="splash">
   <div class="splash-inner">
     <div class="splash-icon">
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="80" height="80" rx="20" fill="#2E7D32"/>
-        <path d="M14 58C14 58 24 26 40 24C56 22 66 58 66 58" stroke="#FFFFFF" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M40 24V58" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M20 50Q30 46 40 48Q50 46 60 50" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round"/>
-      </svg>
+      <img src="icons/icon-512.png" alt=""/>
     </div>
     <h1 class="splash-title">Cantinho Literário</h1>
     <p class="splash-tagline">Sua comunidade de leitores</p>
@@ -55,7 +50,7 @@
 ════════════════════════════════════ -->
 <div id="screen-login" class="login-screen hidden">
   <header class="login-header">
-    <span class="login-logo"><span aria-hidden="true">🖋️</span> Cantinho <em>Literário</em></span>
+    <span class="login-logo"><img class="login-logo-img" src="icons/icon-192.png" alt=""/> Cantinho <em>Literário</em></span>
   </header>
   <main class="login-stage">
   <div class="login-card">
@@ -84,15 +79,19 @@
 
   <!-- TOP NAV BAR -->
   <nav class="top-nav" role="navigation" aria-label="Navegação principal">
+    <!-- Logo e nome: só aparecem no modo computador (menu lateral) -->
+    <div class="tnav-brand" aria-hidden="true"><img src="icons/icon-192.png" alt=""/><span>Cantinho <em>Literário</em></span></div>
     <button class="tnav-btn on" id="tnav-home" onclick="goTo('home')" aria-label="Feed principal" aria-selected="true">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
       </svg>
+      <span class="tnav-label">Início</span>
     </button>
     <button class="tnav-btn" id="tnav-search" onclick="goTo('search')" aria-label="Explorar">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
       </svg>
+      <span class="tnav-label">Explorar</span>
     </button>
     <button class="tnav-btn" id="tnav-chat" onclick="goTo('chats')" aria-label="Mensagens">
       <div style="position:relative;display:inline-flex;">
@@ -101,6 +100,7 @@
         </svg>
         <span class="chat-pip" style="display:none; position:absolute; top:2px; right:2px; width:8px; height:8px; background:#2E7D32; border-radius:50%; border:2px solid #fff;"></span>
       </div>
+      <span class="tnav-label">Mensagens</span>
     </button>
     <button class="tnav-btn" id="tnav-notif" onclick="goTo('notif')" aria-label="Notificações">
       <div style="position:relative;display:inline-flex;">
@@ -109,9 +109,11 @@
         </svg>
         <span class="notif-pip"></span>
       </div>
+      <span class="tnav-label">Notificações</span>
     </button>
     <button class="tnav-btn" id="tnav-profile" onclick="goTo('profile')" aria-label="Meu perfil">
       <img src="avatar-placeholder.svg" alt="Meu perfil" class="tnav-avatar-img" id="my-tnav-avatar"/>
+      <span class="tnav-label">Perfil</span>
     </button>
   </nav>
 

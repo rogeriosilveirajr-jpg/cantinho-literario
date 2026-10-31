@@ -1,0 +1,12 @@
+# Arquivos que ficam fora do site publicado no Cloudflare (mesma ideia do "ignore" do firebase.json)
+.*
+node_modules
+tests
+marca
+*.md
+wrangler.jsonc
+firebase.json
+firestore.indexes.json
+firestore.rules
+package.json
+package-lock.json
