@@ -38,6 +38,7 @@ function initAuth() {
           // Corrige em segundo plano posts antigos sem o campo isPrivate (exigido pelas regras).
           if (typeof syncMyPostsPrivacy === 'function') syncMyPostsPrivacy(APP_USER.isPrivate || false);
           if (typeof checkAdmin === 'function') checkAdmin();
+          if (typeof checkBanned === 'function') checkBanned();
           hideSplash();
           enterApp();
           return;

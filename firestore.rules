@@ -19,6 +19,12 @@ service cloud.firestore {
       return signedIn() && exists(/databases/$(database)/documents/admins/$(me()));
     }
 
+    // Logado e não bloqueado pela moderação (bannedUsers/{uid}). Exigido em toda gravação de conteúdo:
+    // quem foi bloqueado continua lendo, mas não publica, comenta, curte, segue nem conversa.
+    function active() {
+      return signedIn() && !exists(/databases/$(database)/documents/bannedUsers/$(me()));
+    }
+
     function isPrivateUser(userId) {
       let ref = /databases/$(database)/documents/users/$(userId);
       return exists(ref) && get(ref).data.get('isPrivate', false) == true;
@@ -89,13 +95,44 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Usuários bloqueados pela moderação. Só moderadores gravam; a própria pessoa lê o aviso.
+    // Moderador não bloqueia a si mesmo nem outro moderador.
+    match /bannedUsers/{userId} {
+      allow read: if signedIn() && (userId == me() || isAdmin());
+      allow create, update: if isAdmin()
+          && userId != me()
+          && !exists(/databases/$(database)/documents/admins/$(userId))
+          && request.resource.data.keys().hasOnly(['reason', 'bannedBy', 'bannedAt'])
+          && request.resource.data.bannedBy == me()
+          && request.resource.data.reason is string
+          && request.resource.data.reason.size() <= 300;
+      allow delete: if isAdmin();
+    }
+
+    // Posts ocultados pela moderação. Ocultar = copiar o post para cá, sem mudar nada, e apagar
+    // o original na mesma gravação. Restaurar faz o caminho inverso (ver a regra de create dos posts).
+    match /moderatedPosts/{postId} {
+      function postPath() { return /databases/$(database)/documents/posts/$(postId); }
+
+      allow read, delete: if isAdmin();
+      allow create: if isAdmin()
+          && exists(postPath())
+          && !existsAfter(postPath())
+          && request.resource.data.keys().hasOnly(['post', 'hiddenBy', 'hiddenAt', 'reason'])
+          && request.resource.data.post == get(postPath()).data
+          && request.resource.data.hiddenBy == me()
+          && request.resource.data.get('reason', '') is string
+          && request.resource.data.get('reason', '').size() <= 300;
+      allow update: if false;
+    }
+
     // ---------- usuários ----------
     match /users/{userId} {
       allow read: if signedIn();
       allow create: if signedIn() && userId == me()
           && (!('email' in request.resource.data) || request.resource.data.email == null)
           && request.resource.data.get('followersCount', 0) == 0;
-      allow update: if signedIn() && (
+      allow update: if active() && (
           // o próprio usuário edita o perfil (sem gravar e-mail no documento público)
           (userId == me() && (!('email' in request.resource.data) || request.resource.data.email == null)
             && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['followersCount']))
@@ -110,7 +147,7 @@ service cloud.firestore {
 
       match /notifications/{notifId} {
         allow read, update, delete: if signedIn() && userId == me();
-        allow create: if signedIn()
+        allow create: if active()
             && request.resource.data.senderId == me()
             && userId != me()
             && !blockedBetween(me(), userId);
@@ -118,13 +155,13 @@ service cloud.firestore {
 
       match /library/{bookId} {
         allow read: if signedIn() && canSeeUser(userId);
-        allow write: if signedIn() && userId == me() && safeId(bookId);
+        allow write: if active() && userId == me() && safeId(bookId);
       }
     }
 
     match /userBooks/{userId}/library/{bookId} {
       allow read: if signedIn() && canSeeUser(userId);
-      allow write: if signedIn() && userId == me();
+      allow write: if active() && userId == me();
     }
 
     // ---------- posts ----------
@@ -139,13 +176,18 @@ service cloud.firestore {
           || resource.data.authorId == me()
           || followAccepted(me(), resource.data.authorId)
           || isAdmin());
-      allow create: if signedIn()
+      allow create: if (active()
           && autoId(postId)
           && request.resource.data.authorId == me()
           && request.resource.data.isPrivate is bool
           && validPostFields(request.resource.data)
-          && request.resource.data.get('tradeStatus', null) in [null, 'AVAILABLE'];
-      allow update: if signedIn() && (
+          && request.resource.data.get('tradeStatus', null) in [null, 'AVAILABLE'])
+        // moderador restaura um post ocultado exatamente como era, apagando a cópia na mesma gravação
+        || (isAdmin()
+          && exists(/databases/$(database)/documents/moderatedPosts/$(postId))
+          && !existsAfter(/databases/$(database)/documents/moderatedPosts/$(postId))
+          && request.resource.data == get(/databases/$(database)/documents/moderatedPosts/$(postId)).data.post);
+      allow update: if active() && (
           // o autor edita o post (sem trocar o autor); troca concluída não volta atrás
           (resource.data.authorId == me() && request.resource.data.authorId == me()
             && validPostFields(request.resource.data)
@@ -160,7 +202,7 @@ service cloud.firestore {
 
       match /likes/{userId} {
         allow read: if signedIn() && canSeePost(parentPost());
-        allow create: if signedIn() && userId == me()
+        allow create: if active() && userId == me()
             && request.resource.data.userId == me()
             && canSeePost(parentPost());
         allow delete: if signedIn() && userId == me();
@@ -169,11 +211,11 @@ service cloud.firestore {
 
       match /comments/{commentId} {
         allow read: if signedIn() && canSeePost(parentPost());
-        allow create: if signedIn()
+        allow create: if active()
             && request.resource.data.authorId == me()
             && canSeePost(parentPost())
             && !blockedBetween(me(), parentPost().authorId);
-        allow update: if signedIn() && resource.data.authorId == me();
+        allow update: if active() && resource.data.authorId == me();
         allow delete: if signedIn() && (resource.data.authorId == me() || isAdmin());
       }
     }
@@ -188,7 +230,7 @@ service cloud.firestore {
       allow read: if signedIn();
 
       // Quem segue cria o pedido. Perfil privado só aceita pedido PENDENTE.
-      allow create: if signedIn()
+      allow create: if active()
           && request.resource.data.followerId == me()
           && request.resource.data.followedId is string
           && request.resource.data.followedId != me()
@@ -200,7 +242,7 @@ service cloud.firestore {
           );
 
       // Só quem recebeu o pedido pode aceitá-lo (PENDENTE → ACEITO).
-      allow update: if signedIn()
+      allow update: if active()
           && resource.data.followedId == me()
           && resource.data.status == 'PENDING'
           && request.resource.data.status == 'ACCEPTED'
@@ -230,7 +272,7 @@ service cloud.firestore {
 
       // resource == null: o app confere se a conversa já existe antes de criá-la.
       allow read: if signedIn() && (resource == null || me() in resource.data.users);
-      allow create: if signedIn()
+      allow create: if active()
           && request.resource.data.users is list
           && request.resource.data.users.size() == 2
           && me() in request.resource.data.users
@@ -239,7 +281,7 @@ service cloud.firestore {
           && !blockedBetween(request.resource.data.users[0], request.resource.data.users[1])
           && (followAccepted(request.resource.data.users[0], request.resource.data.users[1])
               || followAccepted(request.resource.data.users[1], request.resource.data.users[0]));
-      allow update: if signedIn()
+      allow update: if active()
           && me() in resource.data.users
           && request.resource.data.users == resource.data.users
           && !blockedBetween(resource.data.users[0], resource.data.users[1]);
@@ -247,7 +289,7 @@ service cloud.firestore {
 
       match /messages/{messageId} {
         allow read: if signedIn() && me() in members();
-        allow create: if signedIn()
+        allow create: if active()
             && me() in members()
             && request.resource.data.senderId == me()
             && request.resource.data.text is string
@@ -270,14 +312,14 @@ service cloud.firestore {
 
       allow read: if signedIn();
       // Quem cria já entra como primeiro membro, na mesma gravação.
-      allow create: if signedIn()
+      allow create: if active()
           && autoId(clubId)
           && request.resource.data.ownerId == me()
           && request.resource.data.membersCount == 1
           && validBook(request.resource.data.get('bookOfMonth', null))
           && validClub(request.resource.data)
           && existsAfter(memberPath(me()));
-      allow update: if signedIn() && (
+      allow update: if active() && (
           // o dono muda os dados e o livro do mês, nunca o dono nem o contador
           (resource.data.ownerId == me()
             && changesOnly(['name', 'description', 'city', 'cityKey', 'bookOfMonth'])
@@ -296,7 +338,7 @@ service cloud.firestore {
       match /members/{uid} {
         allow read: if signedIn();
         // Entrar e sair sempre acompanham o contador do clube (ou a criação do clube).
-        allow create: if signedIn() && uid == me()
+        allow create: if active() && uid == me()
             && request.resource.data.uid == me()
             && (!exists(clubPath())
                 || getAfter(clubPath()).data.membersCount == get(clubPath()).data.membersCount + 1);
@@ -309,7 +351,7 @@ service cloud.firestore {
 
       match /messages/{messageId} {
         allow read: if signedIn() && exists(memberPath(me()));
-        allow create: if signedIn()
+        allow create: if active()
             && exists(memberPath(me()))
             && request.resource.data.senderId == me()
             && request.resource.data.text is string
@@ -324,7 +366,7 @@ service cloud.firestore {
 
     // ---------- denúncias ----------
     match /contentReports/{reportId} {
-      allow create: if signedIn()
+      allow create: if active()
           && request.resource.data.reporterId == me()
           && request.resource.data.reporterId != request.resource.data.targetId
           && safeId(request.resource.data.targetId)

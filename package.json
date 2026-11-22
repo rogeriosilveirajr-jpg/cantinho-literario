@@ -7,7 +7,7 @@
     "test:unit": "node --test --experimental-test-coverage --test-coverage-include='lib/**' 'tests/unit/*.test.mjs'",
     "test:rules": "firebase emulators:exec --only firestore --project demo-cantinho \"node --test tests/rules.test.mjs\"",
     "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-cantinho \"playwright test\"",
-    "check": "node --check lib/logic.js && node --check firebase-config.js && node --check auth.js && node --check db.js && node --check app.js && node --check features.js && node --check sw.js"
+    "check": "node --check lib/logic.js && node --check firebase-config.js && node --check auth.js && node --check db.js && node --check app.js && node --check features.js && node --check admin.js && node --check sw.js"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.4",

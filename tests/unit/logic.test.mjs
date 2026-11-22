@@ -353,3 +353,36 @@ describe('buildShareText', () => {
     assert.ok(t.split('\n')[0].length <= 281);
   });
 });
+
+describe('painel do moderador', () => {
+  test('método de login: lista só os provedores usados, na ordem Apple, Google, E-mail', () => {
+    assert.deepEqual(CL.loginMethods({ apple: null, google: 'uid1', email: true }), ['Google', 'E-mail']);
+    assert.deepEqual(CL.loginMethods({ email: 'uid1', apple: 'uid1' }), ['Apple', 'E-mail']);
+  });
+
+  test('método de login: perfil antigo sem o campo vira lista vazia', () => {
+    assert.deepEqual(CL.loginMethods(undefined), []);
+    assert.deepEqual(CL.loginMethods(null), []);
+    assert.deepEqual(CL.loginMethods({ facebook: 'x' }), []);
+  });
+
+  test('data de cadastro em dd/mm/aaaa; sem data vira "—"', () => {
+    const ts = { toMillis: () => new Date(2026, 9, 5, 12).getTime() };
+    assert.equal(CL.formatDateBR(ts), '05/10/2026');
+    assert.equal(CL.formatDateBR(new Date(2026, 0, 31, 12).getTime()), '31/01/2026');
+    assert.equal(CL.formatDateBR(null), '—');
+    assert.equal(CL.formatDateBR(undefined), '—');
+  });
+
+  test('busca de usuários por nome ou @, sem acento e sem diferenciar maiúsculas', () => {
+    const users = [
+      { uid: 'a', displayName: 'Ana Lúcia', handle: 'analu' },
+      { uid: 'b', displayName: 'Bia', handle: 'bialeitora' },
+      { uid: 'c' },
+    ];
+    assert.deepEqual(CL.filterUsers(users, 'lucia').map(u => u.uid), ['a']);
+    assert.deepEqual(CL.filterUsers(users, '@BIA').map(u => u.uid), ['b']);
+    assert.deepEqual(CL.filterUsers(users, '  ').map(u => u.uid), ['a', 'b', 'c']);
+    assert.notEqual(CL.filterUsers(users, ''), users, 'devolve lista nova');
+  });
+});

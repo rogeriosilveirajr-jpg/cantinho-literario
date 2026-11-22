@@ -829,6 +829,17 @@ async function checkAdmin() {
   } catch (e) { APP_IS_ADMIN = false; }
   const row = document.getElementById('settings-moderation');
   if (row) row.style.display = APP_IS_ADMIN ? '' : 'none';
+  const link = document.getElementById('moderation-panel-link');
+  if (link) link.href = 'admin.html' + location.search;   // mantém o ?emulador nos testes
+}
+
+/** Avisa quem foi bloqueado pela moderação (as regras já impedem publicar, comentar etc.). */
+async function checkBanned() {
+  if (!APP_USER || !FIREBASE_CONFIGURED) return;
+  try {
+    const snap = await db.collection('bannedUsers').doc(APP_USER.uid).get();
+    if (snap.exists) showToast('Sua conta foi bloqueada pela moderação. Você pode ler, mas não publicar ou interagir.');
+  } catch (e) { console.error('Erro ao verificar bloqueio:', e); }
 }
 
 function openModeration() {

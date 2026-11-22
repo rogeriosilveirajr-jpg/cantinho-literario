@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex"/>
+  <title>Moderação · Cantinho Literário</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+  <link rel="stylesheet" href="admin.css"/>
+</head>
+<body>
+  <header class="adm-top">
+    <a href="index.html" class="adm-back" id="adm-back">← Voltar ao site</a>
+    <h1>Painel de moderação</h1>
+    <span id="adm-who" class="adm-who"></span>
+  </header>
+
+  <!-- Estados de acesso: só um fica visível -->
+  <main id="adm-loading" class="adm-msg">Verificando acesso…</main>
+  <main id="adm-login" class="adm-msg hidden">
+    <h2>Faça login primeiro</h2>
+    <p>Entre no site com a sua conta de moderador e depois volte para esta página.</p>
+    <a class="btn" href="index.html" id="adm-login-link">Ir para o login</a>
+  </main>
+  <main id="adm-denied" class="adm-msg hidden">
+    <h2>403 · Acesso negado</h2>
+    <p>Esta área é só para moderadores do Cantinho Literário.</p>
+  </main>
+
+  <main id="adm-panel" class="hidden">
+    <nav class="adm-tabs" role="tablist">
+      <button role="tab" data-tab="users" class="active">Usuários</button>
+      <button role="tab" data-tab="posts">Publicações</button>
+      <button role="tab" data-tab="hidden">Ocultadas</button>
+      <button role="tab" data-tab="reports">Denúncias</button>
+    </nav>
+
+    <section id="tab-users" class="adm-tab">
+      <div class="adm-bar">
+        <input id="user-search" type="search" placeholder="Buscar por nome ou @" aria-label="Buscar usuário"/>
+        <span id="user-count" class="adm-count"></span>
+      </div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr><th>Usuário</th><th>Cadastro</th><th>Login</th><th>Posts</th><th>Situação</th><th></th></tr></thead>
+          <tbody id="user-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-posts" class="adm-tab hidden">
+      <p class="adm-hint">As publicações mais recentes, inclusive de perfis privados. <b>Ocultar</b> tira do ar e dá para desfazer; <b>Excluir</b> apaga de vez.</p>
+      <div id="post-list"></div>
+      <button id="post-more" class="btn btn-light hidden">Carregar mais</button>
+    </section>
+
+    <section id="tab-hidden" class="adm-tab hidden">
+      <p class="adm-hint">Publicações ocultadas pela moderação. Ninguém além dos moderadores as vê.</p>
+      <div id="hidden-list"></div>
+    </section>
+
+    <section id="tab-reports" class="adm-tab hidden">
+      <p class="adm-hint">Denúncias pendentes feitas pelos leitores.</p>
+      <div id="report-list"></div>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="adm-toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <script src="lib/logic.js?v=6"></script>
+  <script src="firebase-config.js?v=6"></script>
+  <script src="admin.js?v=1"></script>
+</body>
+</html>

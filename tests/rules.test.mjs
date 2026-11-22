@@ -271,3 +271,94 @@ test('ninguém altera o próprio contador de seguidores', async () => {
   await assertSucceeds(updateDoc(doc(as(BIA), 'users', BIA), { bio: 'leitora', clubIds: [] }));
   await assertFails(setDoc(doc(as('nova'), 'users', 'nova'), { displayName: 'Nova', followersCount: 500 }));
 });
+
+// ---------- 8. painel do moderador (admin.html) ----------
+const ban = (by = MOD) => ({ reason: 'spam', bannedBy: by, bannedAt: serverTimestamp() });
+
+test('painel: moderadora lista todos os posts (inclusive privados) e todos os usuários', async () => {
+  await assertSucceeds(getDocs(query(collection(as(MOD), 'posts'), orderBy('createdAt', 'desc'))));
+  await assertSucceeds(getDocs(query(collection(as(MOD), 'users'), orderBy('createdAt', 'desc'))));
+});
+
+test('bloquear usuário: só moderadora bloqueia; não bloqueia a si mesma nem outro moderador', async () => {
+  await assertFails(setDoc(doc(as(BIA), 'bannedUsers', CAIO), ban(BIA)));
+  await assertFails(setDoc(doc(as(MOD), 'bannedUsers', MOD), ban()));
+  await env.withSecurityRulesDisabled(async ctx => { await setDoc(doc(ctx.firestore(), 'admins', 'mod2'), { since: 1 }); });
+  await assertFails(setDoc(doc(as(MOD), 'bannedUsers', 'mod2'), ban()));
+  await assertFails(setDoc(doc(as(MOD), 'bannedUsers', CAIO), { ...ban(), extra: 1 }));
+  await assertSucceeds(setDoc(doc(as(MOD), 'bannedUsers', CAIO), ban()));
+});
+
+test('lista de bloqueados: usuário comum recebe permissão negada; o bloqueado vê só o próprio aviso', async () => {
+  await env.withSecurityRulesDisabled(async ctx => { await setDoc(doc(ctx.firestore(), 'bannedUsers', CAIO), { reason: 'spam' }); });
+  await assertFails(getDocs(collection(as(BIA), 'bannedUsers')));
+  await assertFails(getDoc(doc(as(BIA), 'bannedUsers', CAIO)));
+  await assertSucceeds(getDoc(doc(as(CAIO), 'bannedUsers', CAIO)));
+  await assertSucceeds(getDocs(collection(as(MOD), 'bannedUsers')));
+});
+
+test('usuário bloqueado não publica, comenta, curte, segue, denuncia nem edita o perfil; continua lendo', async () => {
+  await env.withSecurityRulesDisabled(async ctx => { await setDoc(doc(ctx.firestore(), 'bannedUsers', CAIO), { reason: 'spam' }); });
+  const caio = as(CAIO);
+  await assertFails(addDoc(collection(caio, 'posts'), post({ authorId: CAIO })));
+  await assertFails(addDoc(collection(caio, 'posts', 'post-bia', 'comments'), { authorId: CAIO, text: 'oi' }));
+  await assertFails(setDoc(doc(caio, 'posts', 'post-bia', 'likes', CAIO), { userId: CAIO }));
+  await assertFails(setDoc(doc(caio, 'followGraph', `${CAIO}_${BIA}`), { followerId: CAIO, followedId: BIA, status: 'ACCEPTED' }));
+  await assertFails(addDoc(collection(caio, 'contentReports'), { reporterId: CAIO, targetId: 'post-bia', status: 'PENDING' }));
+  await assertFails(updateDoc(doc(caio, 'users', CAIO), { bio: 'voltei' }));
+  await assertSucceeds(getDoc(doc(caio, 'posts', 'post-bia')));
+});
+
+test('desbloquear: moderadora apaga o bloqueio e a pessoa volta a publicar', async () => {
+  await env.withSecurityRulesDisabled(async ctx => { await setDoc(doc(ctx.firestore(), 'bannedUsers', CAIO), { reason: 'spam' }); });
+  await assertFails(deleteDoc(doc(as(BIA), 'bannedUsers', CAIO)));
+  await assertSucceeds(deleteDoc(doc(as(MOD), 'bannedUsers', CAIO)));
+  await assertSucceeds(addDoc(collection(as(CAIO), 'posts'), post({ authorId: CAIO })));
+});
+
+/** Ocultar = mover o post para moderatedPosts na mesma gravação. */
+/** Lê um documento sem as regras (withSecurityRulesDisabled não devolve o valor da função). */
+async function readRaw(path) {
+  let data;
+  await env.withSecurityRulesDisabled(async ctx => { data = (await getDoc(doc(ctx.firestore(), path))).data(); });
+  return data;
+}
+
+async function hidePostAs(uid, postId, change = {}) {
+  const original = await readRaw(`posts/${postId}`);
+  const db = as(uid);
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'moderatedPosts', postId), { post: { ...original, ...change }, hiddenBy: uid, hiddenAt: serverTimestamp(), reason: 'spam' });
+  batch.delete(doc(db, 'posts', postId));
+  return batch.commit();
+}
+
+test('ocultar post: só moderadora, sem alterar o conteúdo, e o post some do feed', async () => {
+  await assertFails(hidePostAs(BIA, 'post-bia'));
+  await assertFails(hidePostAs(MOD, 'post-bia', { text: 'editado pela moderação' }));
+  await assertSucceeds(hidePostAs(MOD, 'post-bia'));
+  await assertFails(getDoc(doc(as(BIA), 'posts', 'post-bia')));          // não existe mais para ninguém
+  await assertFails(getDoc(doc(as(BIA), 'moderatedPosts', 'post-bia')));  // e a cópia é só da moderação
+  await assertSucceeds(getDoc(doc(as(MOD), 'moderatedPosts', 'post-bia')));
+});
+
+test('ocultar sem apagar o original (cópia solta) é recusado', async () => {
+  const db = as(MOD);
+  await assertFails(setDoc(doc(db, 'moderatedPosts', 'post-bia'), { post: { authorId: BIA, isPrivate: false, text: 'público', createdAt: 2 }, hiddenBy: MOD, reason: '' }));
+});
+
+test('restaurar post oculto: volta igualzinho; com conteúdo trocado é recusado', async () => {
+  await assertSucceeds(hidePostAs(MOD, 'post-bia'));
+  const restore = async (uid, change = {}) => {
+    const saved = (await readRaw('moderatedPosts/post-bia')).post;
+    const db = as(uid);
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'posts', 'post-bia'), { ...saved, ...change });
+    batch.delete(doc(db, 'moderatedPosts', 'post-bia'));
+    return batch.commit();
+  };
+  await assertFails(restore(BIA));
+  await assertFails(restore(MOD, { text: 'trocado' }));
+  await assertSucceeds(restore(MOD));
+  await assertSucceeds(getDoc(doc(as(BIA), 'posts', 'post-bia')));
+});
