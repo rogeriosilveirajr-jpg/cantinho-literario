@@ -15,6 +15,11 @@ const firebaseConfig = {
   measurementId: "G-BC43MZVHD6"
 };
 
+// Chave do Google Books (Google Cloud → Credenciais → "Google Books - Cantinho Literario").
+// É pública como a apiKey acima: só abre a Books API e só funciona a partir do site publicado
+// (restrição por site no Google Cloud). Sem chave, a cota grátis é dividida com a internet toda.
+const GOOGLE_BOOKS_KEY = 'AIzaSyAmUqUVz7DZPyx1RWmH8taNbVF3HBWR2d0';
+
 // Se a apiKey estiver preenchida de verdade, ativamos o Firebase.
 const FIREBASE_CONFIGURED = firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_SUA_API_KEY_AQUI";
 

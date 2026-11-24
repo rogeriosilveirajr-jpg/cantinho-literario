@@ -7,6 +7,8 @@
 const DB_LISTENERS  = {};  // listeners ativos (para cancelar ao navegar)
 let   FEED_LAST_DOC = null;
 let   FEED_LOADING  = false;
+let   FEED_END      = false;   // a última busca trouxe menos que uma página: não há mais posts
+const FEED_PAGE_SIZE = 20;
 let   CURRENT_POST_ID = null;  // post aberto no modal de comentários
 
 // ════════════════════════════════════════════════════════════
@@ -19,6 +21,7 @@ function loadFeed(refresh = false) {
 
   if (refresh) {
     FEED_LAST_DOC = null;
+    FEED_END = false;
     container.innerHTML = '';
     renderFeedSkeleton(container);
   }
@@ -28,13 +31,14 @@ function loadFeed(refresh = false) {
     return;
   }
 
-  if (FEED_LOADING) return;
+  // Sem isso, a rolagem infinita num feed vazio redesenhava a primeira página a cada movimento.
+  if (FEED_LOADING || FEED_END) return;
   FEED_LOADING = true;
 
   // As regras de segurança só liberam a busca geral de posts públicos.
   let q = db.collection('posts').where('isPrivate', '==', false);
   if (CURRENT_FEED_TAB === 'trade') q = q.where('postType', '==', 'trade');
-  q = q.orderBy('createdAt', 'desc').limit(20);
+  q = q.orderBy('createdAt', 'desc').limit(FEED_PAGE_SIZE);
 
   if (FEED_LAST_DOC) q = q.startAfter(FEED_LAST_DOC);
 
@@ -42,9 +46,12 @@ function loadFeed(refresh = false) {
     .then(snap => {
       FEED_LOADING = false;
       container.querySelector('.skeleton-wrap')?.remove();
+      const firstPage = !FEED_LAST_DOC;
+      FEED_END = snap.size < FEED_PAGE_SIZE;
 
-      if (snap.empty && !FEED_LAST_DOC) {
+      if (snap.empty && firstPage) {
         container.innerHTML = emptyFeedHtml();
+        if (typeof renderDiscovery === 'function') renderDiscovery(container, 0);   // welcome.js
         return;
       }
       FEED_LAST_DOC = snap.docs[snap.docs.length - 1] || FEED_LAST_DOC;
@@ -86,6 +93,8 @@ function loadFeed(refresh = false) {
               checkLiked(res.doc.id, btn).catch(err => console.error('Erro ao verificar like:', err));
             }
           });
+          // Feed com poucos posts ganha pergunta do dia, citação e sugestões de livros (welcome.js).
+          if (firstPage && typeof renderDiscovery === 'function') renderDiscovery(container, results.filter(Boolean).length);
         })
         .catch(err => {
           console.error('Feed render error:', err);
@@ -487,6 +496,7 @@ function renderMyProfile() {
 
   const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.innerHTML = val || ''; };
   set('.profile-name', APP_USER.displayName || 'Usuário');
+  if (typeof setFounderBadge === 'function') setFounderBadge('my-founder-badge', APP_USER.createdAt);   // welcome.js
   set('.profile-handle', '@' + (APP_USER.handle || APP_USER.uid.slice(0,8)));
   set('.profile-top-handle', '@' + (APP_USER.handle || APP_USER.uid.slice(0,8)));
   
@@ -1430,6 +1440,7 @@ async function openUserProfile(userId) {
   }
   
   openSheet('sh-user-profile');
+  if (typeof setFounderBadge === 'function') setFounderBadge('up-founder-badge', null);
   
   document.getElementById('up-feed-container').innerHTML = '<p style="color:#9CAFA0;text-align:center;">Carregando...</p>';
   document.getElementById('up-btn-row').innerHTML = '';
@@ -1443,6 +1454,7 @@ async function openUserProfile(userId) {
     
     const u = docSnap.data();
     document.getElementById('up-name').textContent = u.displayName || 'Leitor';
+    if (typeof setFounderBadge === 'function') setFounderBadge('up-founder-badge', u.createdAt);   // welcome.js
     document.getElementById('up-handle').textContent = '@' + (u.handle || 'leitor');
     document.getElementById('up-bio').textContent = u.bio || '';
     

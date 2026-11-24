@@ -1,0 +1,79 @@
+/* ============================================================
+   CANTINHO LITERÁRIO — boas-vindas, Descobrir, convites e selo Fundador
+   ============================================================ */
+
+/* ─── Boas-vindas ─── */
+.wl-body { display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
+.wl-progress { font-size: .8rem; color: var(--ink-soft); font-weight: 600; }
+.wl-title { font-family: var(--font-serif); font-size: 1.15rem; color: var(--ink); margin: 4px 0 0; }
+.wl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.wl-chip {
+  min-height: 40px; padding: 0 14px; border-radius: var(--r-pill);
+  border: 1.5px solid var(--border); background: var(--card); color: var(--ink-mid);
+  font-size: .86rem; font-weight: 600; transition: background .15s, border-color .15s, color .15s;
+}
+.wl-chip:hover { border-color: var(--amber-light); }
+.wl-chip[aria-pressed="true"] { background: var(--terracotta); border-color: var(--terracotta); color: var(--white); }
+.wl-chip:focus-visible, .wl-action:focus-visible { outline: 3px solid var(--amber-light); outline-offset: 2px; }
+.wl-next { margin-top: 8px; }
+.wl-reading:empty { display: none; }
+.wl-book { display: block; padding: 10px 12px; background: var(--bg); border-radius: var(--r-md); font-size: .88rem; color: var(--ink-mid); }
+.wl-list { display: flex; flex-direction: column; gap: 8px; }
+.wl-person, .wl-club {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: var(--bg); border-radius: var(--r-md);
+}
+.wl-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.wl-name { display: flex; flex-direction: column; flex: 1; min-width: 0; font-size: .88rem; color: var(--ink); }
+.wl-name strong, .wl-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl-name small { color: var(--ink-soft); font-size: .76rem; }
+.wl-action {
+  flex-shrink: 0; min-height: 36px; padding: 0 14px; border-radius: var(--r-pill);
+  background: var(--terracotta); color: var(--white); font-weight: 700; font-size: .8rem;
+}
+.wl-action:hover { background: var(--terracotta-dk); }
+.wl-action:disabled { background: #E8F2E8; color: var(--ink-soft); cursor: default; }
+
+/* ─── Seção Descobrir do feed ─── */
+.discovery { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.disc-head { font-family: var(--font-serif); font-size: 1.05rem; color: var(--ink); margin: 6px 4px 0; }
+.disc-card {
+  display: flex; flex-direction: column; gap: 8px; margin: 0;
+  padding: 14px 16px; background: var(--card); border-radius: var(--r-card); box-shadow: var(--sh-card);
+}
+.disc-card .bp-btn { align-self: flex-start; }
+.disc-kicker { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: var(--terracotta); }
+.disc-prompt-text { font-family: var(--font-serif); font-size: 1.05rem; color: var(--ink); margin: 0; line-height: 1.45; }
+.disc-quote { font-family: var(--font-serif); font-style: italic; font-size: 1rem; color: var(--ink); margin: 0; line-height: 1.55; }
+.disc-cite { font-size: .8rem; color: var(--ink-soft); }
+.disc-books { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+.disc-book {
+  display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; width: 120px;
+  scroll-snap-align: start; font-size: .8rem;
+}
+.disc-cover { width: 120px; aspect-ratio: 2 / 3; border-radius: var(--r-sm); background: var(--cover-bg); overflow: hidden; }
+.disc-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.disc-title { color: var(--ink); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.disc-author { color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.disc-book .wl-action { margin-top: auto; }
+.disc-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 8px; }
+
+/* ─── Convites ─── */
+.btn-invite {
+  display: block; width: calc(100% - 32px); margin: 0 16px 6px; min-height: 44px;
+  border-radius: var(--r-pill); font-weight: 700; color: var(--terracotta);
+  background: transparent; border: 1.5px solid var(--amber-light);
+}
+.btn-invite:hover { background: #E8F5E9; }
+.inv-label { display: block; font-size: .8rem; font-weight: 700; color: var(--ink-mid); margin: 14px 0 6px; }
+.inv-link { width: 100%; font-size: .85rem; }
+.inv-actions { display: flex; gap: 8px; margin-top: 10px; }
+.inv-count { margin-top: 14px; font-size: .9rem; font-weight: 600; color: var(--terracotta); }
+
+/* ─── Selo Fundador ─── */
+.founder-badge {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 2px 8px; border-radius: var(--r-pill);
+  background: #E8F5E9; color: var(--terracotta-dk); font-size: .7rem; font-weight: 700;
+}
+.founder-badge[hidden] { display: none; }

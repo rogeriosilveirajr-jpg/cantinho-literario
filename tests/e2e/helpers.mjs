@@ -26,19 +26,24 @@ export async function listDocs(request, path) {
   return body.documents || [];
 }
 
-/** A busca de livros devolve os livros acima cujo título contém o que foi digitado. */
+/** A busca de livros devolve os livros acima cujo título contém o que foi digitado.
+ *  As sugestões por gênero da seção Descobrir (com langRestrict) recebem todos. */
 export async function mockGoogleBooks(page) {
   await page.route('https://www.googleapis.com/books/v1/volumes**', route => {
-    const q = new URL(route.request().url()).searchParams.get('q').toLowerCase();
-    const items = Object.values(BOOKS).filter(b => b.volumeInfo.title.toLowerCase().includes(q));
+    const params = new URL(route.request().url()).searchParams;
+    const q = params.get('q').toLowerCase();
+    const items = Object.values(BOOKS)
+      .filter(b => params.has('langRestrict') || b.volumeInfo.title.toLowerCase().includes(q));
     route.fulfill({ json: { items } });
   });
 }
 
 let counter = 0;
 
-/** Entra pelo botão "Continuar com E-mail" (respondendo os prompts), criando uma conta nova. */
-export async function loginNewUser(page, name = 'Leitora') {
+/** Entra pelo botão "Continuar com E-mail" (respondendo os prompts), criando uma conta nova.
+ *  welcome: true deixa a janela de boas-vindas aberta; senão ela é pulada.
+ *  query: texto somado ao endereço (ex.: "&convite=uid"). */
+export async function loginNewUser(page, name = 'Leitora', { welcome = false, query = '' } = {}) {
   counter += 1;
   const email = `${name.toLowerCase()}${Date.now()}${counter}@teste.dev`;
   await mockGoogleBooks(page);
@@ -48,11 +53,15 @@ export async function loginNewUser(page, name = 'Leitora') {
     if (dialog.type() === 'prompt') dialog.accept(answers.shift() ?? '');
     else dialog.accept();
   });
-  await page.goto(APP_URL);
+  await page.goto(APP_URL + query);
   await page.getByRole('button', { name: 'Continuar com e-mail' }).click();
   await expect(page.locator('#app')).toBeVisible();
   await page.evaluate(newName => db.collection('users').doc(APP_USER.uid).update({ displayName: newName })
     .then(() => { APP_USER.displayName = newName; }), name);
+  if (!welcome) {
+    await page.locator('#sh-welcome').getByRole('button', { name: 'Pular' }).click();
+    await expect(page.locator('#sh-welcome')).toBeHidden();
+  }
   return email;
 }
 

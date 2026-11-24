@@ -1,8 +1,8 @@
 // Service worker do Cantinho Literário.
 // Estratégia "rede primeiro": sempre busca a versão nova do site e só usa a cópia
 // guardada quando a pessoa está sem internet. Assim as atualizações chegam a todos.
-const CACHE_NAME = 'cantinho-cache-v9';
-const APP_SHELL = ['./', './index.html', './styles.css', './features.css', './lib/logic.js', './app.js', './db.js', './auth.js', './features.js', './firebase-config.js'];
+const CACHE_NAME = 'cantinho-cache-v10';
+const APP_SHELL = ['./', './index.html', './styles.css', './features.css', './welcome.css', './lib/logic.js', './lib/welcome.js', './welcome.js', './app.js', './db.js', './auth.js', './features.js', './firebase-config.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));

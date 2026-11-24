@@ -32,6 +32,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="features.css"/>
+  <link rel="stylesheet" href="welcome.css"/>
   <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
 <body>
@@ -228,6 +229,7 @@
         </div>
         <div class="profile-name-row">
           <h1 class="profile-name" id="my-profile-name"></h1>
+          <span id="my-founder-badge" class="founder-badge" title="Chegou ao Cantinho antes de março de 2027" hidden>🌱 Fundador</span>
           <svg class="profile-lock" id="my-profile-lock" style="display:none;" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" title="Perfil privado"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
         <span class="profile-handle" id="my-profile-handle"></span>
@@ -257,6 +259,7 @@
       <!-- Conquistas e retrospectiva (features.js) -->
       <div id="achievements" class="ach-wrap"></div>
       <button class="btn-wrapped" onclick="openWrapped()">✨ Minha retrospectiva do ano</button>
+      <button class="btn-invite" onclick="openInvite()">💌 Convidar amigos</button>
 
       <!-- Profile tabs -->
       <div class="ptabs-bar" role="tablist" aria-label="Seções do perfil">
@@ -330,6 +333,7 @@
       <div class="settings-list">
         <div class="settings-group">
           <div class="settings-group-label">Conta</div>
+          <button class="settings-row" onclick="openInvite()"><div class="sr-icon sri-orange"><span aria-hidden="true">💌</span></div><div class="sr-txt"><strong>Convidar amigos</strong></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
           <button class="settings-row" onclick="openSheet('sh-privacy')"><div class="sr-icon sri-orange"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div><div class="sr-txt"><strong>Privacidade da Conta</strong></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
           <button id="settings-moderation" class="settings-row" style="display:none" onclick="openModeration()"><div class="sr-icon sri-orange"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z"/></svg></div><div class="sr-txt"><strong>Moderação</strong></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
           <button class="settings-row" onclick="showToast('Notificações em breve')"><div class="sr-icon sri-red"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div><div class="sr-txt"><strong>Notificações</strong><span>Gerenciar alertas</span></div><svg width="16" height="16" class="sr-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 18l6-6-6-6"/></svg></button>
@@ -388,6 +392,41 @@
   </div><!-- end content-area -->
 
 <!-- Comments -->
+<!-- Boas-vindas da conta nova (welcome.js) -->
+<div id="sh-welcome" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-welcome-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="finishWelcome()">Pular</button>
+      <h2 id="sh-welcome-ttl" class="sh-title">Boas-vindas! 📚</h2>
+      <span class="sh-action wl-progress" id="welcome-progress" aria-live="polite"></span>
+    </div>
+    <div class="sh-body wl-body" id="welcome-body"></div>
+  </div>
+</div>
+
+<!-- Convidar amigos (welcome.js) -->
+<div id="sh-invite" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-invite-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-invite')">Fechar</button>
+      <h2 id="sh-invite-ttl" class="sh-title">Convidar amigos</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body">
+      <p class="muted-small">Mande o seu link para quem ama ler. Quando a pessoa criar a conta por ele, você recebe um aviso.</p>
+      <label class="inv-label" for="invite-link">Seu link de convite</label>
+      <input id="invite-link" class="ep-input inv-link" readonly onfocus="this.select()"/>
+      <div class="inv-actions">
+        <button class="bp-btn" onclick="shareInvite()">Compartilhar</button>
+        <button class="bp-btn bp-btn-ghost" onclick="copyInviteLink()">Copiar link</button>
+      </div>
+      <p class="inv-count" id="invite-count" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+
 <div id="sh-comments" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-cmt-ttl">
   <div class="sheet-box sh-tall">
     <div class="sh-handle"></div>
@@ -431,6 +470,7 @@
         </div>
         <div class="profile-name-row">
           <h1 class="profile-name" id="up-name"></h1>
+          <span id="up-founder-badge" class="founder-badge" title="Chegou ao Cantinho antes de março de 2027" hidden>🌱 Fundador</span>
         </div>
         <span class="profile-handle" id="up-handle"></span>
         <p class="profile-bio" id="up-bio"></p>
@@ -556,12 +596,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <!-- App scripts -->
-<script src="lib/logic.js?v=5"></script>
-<script src="firebase-config.js?v=5"></script>
-<script src="auth.js?v=5"></script>
-<script src="db.js?v=5"></script>
-<script src="app.js?v=5"></script>
-<script src="features.js?v=5"></script>
+<script src="lib/logic.js?v=6"></script>
+<script src="lib/welcome.js?v=6"></script>
+<script src="firebase-config.js?v=6"></script>
+<script src="auth.js?v=6"></script>
+<script src="db.js?v=6"></script>
+<script src="app.js?v=6"></script>
+<script src="features.js?v=6"></script>
+<script src="welcome.js?v=6"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

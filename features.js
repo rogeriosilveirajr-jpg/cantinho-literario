@@ -106,6 +106,7 @@ function onBookPicked(book, mode) {
   const picked = { id: book.id, title: book.title, author: book.author, coverUrl: book.coverUrl || '' };
   if (mode === 'post') setComposeBook(picked);
   if (mode === 'club') setClubBook(picked);
+  if (mode === 'welcome') setWelcomeReading(picked);   // welcome.js
 }
 
 function setComposeBook(book) {
@@ -540,9 +541,10 @@ async function leaveClub() {
   await changeMembership(false);
 }
 
-async function changeMembership(join) {
-  const c = CURRENT_CLUB;
-  if (!c || !APP_USER) return;
+/** Entra ou sai de um clube (o aberto na tela, ou outro, como nas boas-vindas). @returns {Promise<boolean>} */
+async function changeMembership(join, club = CURRENT_CLUB) {
+  const c = club;
+  if (!c || !APP_USER) return false;
   const ref = db.collection('clubs').doc(c.id);
   const inc = firebase.firestore.FieldValue.increment(join ? 1 : -1);
   try {
@@ -556,13 +558,17 @@ async function changeMembership(join) {
     await batch.commit();
     const ids = (APP_USER.clubIds || []).filter(id => id !== c.id);
     APP_USER = { ...APP_USER, clubIds: join ? [...ids, c.id] : ids };
-    CURRENT_CLUB = { ...c, membersCount: Math.max(0, (c.membersCount || 0) + (join ? 1 : -1)) };
-    renderClub();
+    if (CURRENT_CLUB && CURRENT_CLUB.id === c.id) {
+      CURRENT_CLUB = { ...c, membersCount: Math.max(0, (c.membersCount || 0) + (join ? 1 : -1)) };
+      renderClub();
+    }
     loadClubs();
     showToast(join ? 'Bem-vindo ao clube! 📚' : 'Você saiu do clube.');
+    return true;
   } catch (err) {
     console.error('Erro ao mudar participação no clube:', err);
     showToast('Erro ao atualizar o clube 😕');
+    return false;
   }
 }
 

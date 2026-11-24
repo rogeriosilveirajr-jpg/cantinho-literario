@@ -362,3 +362,46 @@ test('restaurar post oculto: volta igualzinho; com conteúdo trocado é recusado
   await assertSucceeds(restore(MOD));
   await assertSucceeds(getDoc(doc(as(BIA), 'posts', 'post-bia')));
 });
+
+// ---------- boas-vindas, convites e selo Fundador ----------
+const newProfile = (uid, extra = {}) => ({ uid, displayName: 'Nova', followersCount: 0, createdAt: serverTimestamp(), ...extra });
+
+test('boas-vindas: a pessoa grava até 5 gêneros favoritos e a data em que terminou (valor-limite)', async () => {
+  const bia = doc(as(BIA), 'users', BIA);
+  await assertSucceeds(updateDoc(bia, { favoriteGenres: ['fantasia', 'romance'], onboardedAt: serverTimestamp() }));
+  await assertSucceeds(updateDoc(bia, { favoriteGenres: ['romance', 'fantasia', 'suspense', 'terror', 'poesia'] }));
+  await assertFails(updateDoc(bia, { favoriteGenres: ['romance', 'fantasia', 'suspense', 'terror', 'poesia', 'hq'] }));
+  await assertFails(updateDoc(bia, { favoriteGenres: ['fantasia', 'x'.repeat(5000)] }));   // só ids conhecidos
+  await assertFails(updateDoc(bia, { favoriteGenres: [42] }));
+  await assertFails(updateDoc(bia, { favoriteGenres: 'fantasia' }));
+  await assertFails(updateDoc(bia, { onboardedAt: 'ontem' }));
+});
+
+test('conta nova: data de cadastro tem que ser a hora do servidor', async () => {
+  await assertSucceeds(setDoc(doc(as('nova'), 'users', 'nova'), newProfile('nova')));
+  await assertFails(setDoc(doc(as('velha'), 'users', 'velha'), newProfile('velha', { createdAt: new Date(2020, 0, 1) })));
+});
+
+test('ninguém muda a própria data de cadastro (protege o selo Fundador)', async () => {
+  await assertSucceeds(setDoc(doc(as('nova'), 'users', 'nova'), newProfile('nova')));
+  await assertFails(updateDoc(doc(as('nova'), 'users', 'nova'), { createdAt: new Date(2020, 0, 1) }));
+});
+
+test('convite: entra com o id de quem convidou, se for outra pessoa que existe', async () => {
+  await assertSucceeds(setDoc(doc(as('nova'), 'users', 'nova'), newProfile('nova', { invitedBy: BIA })));
+  await assertFails(setDoc(doc(as('eu'), 'users', 'eu'), newProfile('eu', { invitedBy: 'eu' })));
+  await assertFails(setDoc(doc(as('x'), 'users', 'x'), newProfile('x', { invitedBy: 'fantasma' })));
+  await assertFails(setDoc(doc(as('y'), 'users', 'y'), newProfile('y', { invitedBy: '<img onerror=1>' })));
+});
+
+test('convite: depois do cadastro, ninguém troca nem cria quem convidou', async () => {
+  await assertSucceeds(setDoc(doc(as('nova'), 'users', 'nova'), newProfile('nova', { invitedBy: BIA })));
+  await assertFails(updateDoc(doc(as('nova'), 'users', 'nova'), { invitedBy: CAIO }));
+  await assertFails(updateDoc(doc(as(ANA), 'users', ANA), { invitedBy: BIA }));
+});
+
+test('convite: quem convidou consegue contar quantos entraram pelo link', async () => {
+  await assertSucceeds(setDoc(doc(as('nova'), 'users', 'nova'), newProfile('nova', { invitedBy: BIA })));
+  const snap = await assertSucceeds(getDocs(query(collection(as(BIA), 'users'), where('invitedBy', '==', BIA))));
+  assert.equal(snap.size, 1);
+});

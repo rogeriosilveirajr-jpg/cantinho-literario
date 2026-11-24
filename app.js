@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function enterApp() {
   const login = document.getElementById('screen-login');
   const app   = document.getElementById('app');
-  if (login) { login.style.transition = 'opacity .3s'; login.style.opacity = '0'; setTimeout(() => login.classList.add('hidden'), 300); }
+  if (login) { login.style.transition = 'opacity .3s'; login.style.opacity = '0'; login.style.pointerEvents = 'none'; setTimeout(() => login.classList.add('hidden'), 300); }  // enquanto some, não pega cliques
   if (app) app.classList.remove('hidden');
 
   // Carrega dados iniciais
@@ -25,6 +25,8 @@ function enterApp() {
   if (typeof renderMyProfile === 'function') renderMyProfile();    // db.js — foto, nome, contadores
   if (typeof listenMyLibrary === 'function') listenMyLibrary(); // db.js - listener de estantes de livros
   if (typeof loadChats === 'function') loadChats();             // db.js — carregar lista de conversas
+  if (typeof clearPendingInvite === 'function') clearPendingInvite(); // welcome.js — convite já usado (ou de quem já tinha conta)
+  if (typeof maybeOpenWelcome === 'function') maybeOpenWelcome(); // welcome.js — boas-vindas da conta nova
 }
 
 // ─── Navegação entre telas ──────────────────────────────────
@@ -291,6 +293,8 @@ function openSheet(id) {
 
 function closeSheet(id) {
   const ep = document.getElementById("emoji-popup"); if(ep) ep.classList.add("hidden");
+  // Fechar as boas-vindas por qualquer caminho conta como pular (welcome.js).
+  if (id === 'sh-welcome' && typeof WELCOME_OPEN !== 'undefined' && WELCOME_OPEN) { finishWelcome(); return; }
   const el = document.getElementById(id);
   if (!el) return;
   el.classList.add('hidden');
@@ -454,6 +458,15 @@ function debounceBookSearch(query) {
   bookSearchTimeout = setTimeout(() => searchGoogleBooks(query), 600);
 }
 
+/** Busca no Google Books com a chave do site. Se o Google recusar a chave (ex.: rodando em
+ *  localhost, fora do site autorizado), tenta de novo sem ela. @returns {Promise<Response>} */
+async function fetchGoogleBooks(params) {
+  const res = await fetch(CLW.booksUrl(params, GOOGLE_BOOKS_KEY));
+  if (res.ok || !GOOGLE_BOOKS_KEY) return res;
+  console.warn(`Google Books recusou a chave (${res.status}); tentando sem ela.`);
+  return fetch(CLW.booksUrl(params, ''));
+}
+
 async function searchGoogleBooks(query) {
   const loading = document.getElementById('book-search-loading');
   const resultsDiv = document.getElementById('book-search-results');
@@ -462,7 +475,8 @@ async function searchGoogleBooks(query) {
   resultsDiv.innerHTML = '';
   
   try {
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15`);
+    const res = await fetchGoogleBooks({ q: query, maxResults: 15 });
+    if (!res.ok) throw new Error(`Google Books respondeu ${res.status}`);
     const data = await res.json();
     loading.style.display = 'none';
     
@@ -495,8 +509,9 @@ async function searchGoogleBooks(query) {
       resultsDiv.appendChild(itemEl);
     });
   } catch (err) {
+    console.error('Erro na busca de livros:', err);
     loading.style.display = 'none';
-    resultsDiv.innerHTML = '<p style="text-align:center; color:#d32f2f;">Erro na busca.</p>';
+    resultsDiv.innerHTML = '<p style="text-align:center; color:#d32f2f;">Não deu para buscar livros agora. Tente de novo em instantes.</p>';
   }
 }
 

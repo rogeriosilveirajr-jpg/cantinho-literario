@@ -128,14 +128,32 @@ service cloud.firestore {
 
     // ---------- usuários ----------
     match /users/{userId} {
+      // Boas-vindas: até 5 gêneros favoritos (só os ids de GENRES em lib/welcome.js) e a data em que terminou.
+      function validWelcome(d) {
+        return (!('favoriteGenres' in d) || (d.favoriteGenres is list && d.favoriteGenres.size() <= 5
+              && d.favoriteGenres.hasOnly(['romance', 'fantasia', 'suspense', 'ficcao-cientifica', 'classicos', 'brasileira', 'jovem-adulto', 'terror', 'poesia', 'hq', 'biografia', 'autoajuda'])))
+            && (!('onboardedAt' in d) || d.onboardedAt is timestamp);
+      }
+      // Convite: id seguro de outra pessoa que já tem conta.
+      function validInviter(d) {
+        return !('invitedBy' in d) || (safeId(d.invitedBy) && d.invitedBy != me()
+            && exists(/databases/$(database)/documents/users/$(d.invitedBy)));
+      }
+
       allow read: if signedIn();
+      // A data de cadastro é a do servidor (o selo Fundador depende dela).
       allow create: if signedIn() && userId == me()
           && (!('email' in request.resource.data) || request.resource.data.email == null)
-          && request.resource.data.get('followersCount', 0) == 0;
+          && request.resource.data.get('followersCount', 0) == 0
+          && request.resource.data.get('createdAt', request.time) == request.time
+          && validWelcome(request.resource.data)
+          && validInviter(request.resource.data);
       allow update: if active() && (
-          // o próprio usuário edita o perfil (sem gravar e-mail no documento público)
+          // o próprio usuário edita o perfil (sem gravar e-mail no documento público);
+          // data de cadastro e quem convidou nunca mudam
           (userId == me() && (!('email' in request.resource.data) || request.resource.data.email == null)
-            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['followersCount']))
+            && validWelcome(request.resource.data)
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['followersCount', 'createdAt', 'invitedBy']))
           // outra pessoa só pode somar/subtrair 1 no contador de seguidores
           || (userId != me() && changesOnly(['followersCount']) && stepOfOne('followersCount'))
         );

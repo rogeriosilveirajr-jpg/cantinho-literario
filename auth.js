@@ -243,7 +243,10 @@ async function handleNewUser(firebaseUser, provider) {
   if (!snap.exists) {
     // Primeiro login → cria perfil
     const handle = generateHandle(firebaseUser.displayName || 'leitor');
+    // Quem chegou por um link de convite fica ligado a quem convidou (welcome.js).
+    const inviter = typeof resolvePendingInviter === 'function' ? await resolvePendingInviter(firebaseUser.uid) : null;
     const profile = {
+      ...(inviter ? { invitedBy: inviter } : {}),
       uid:         firebaseUser.uid,
       displayName: firebaseUser.displayName || 'Leitor',
       handle:      handle,
@@ -266,7 +269,9 @@ async function handleNewUser(firebaseUser, provider) {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
     await userRef.set(profile);
-    APP_USER = { ...profile, uid: firebaseUser.uid };
+    // createdAt local até recarregar (o do servidor ainda não voltou): serve para o selo Fundador.
+    APP_USER = { ...profile, uid: firebaseUser.uid, createdAt: new Date() };
+    if (inviter) notifyInviter(inviter);
   } else {
     // Login subsequente → vincula provider extra se necessário
     const updates = { [`authProviders.${provider}`]: firebaseUser.uid || true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
@@ -335,5 +340,9 @@ function hideSplash() {
 }
 
 function showLogin() {
-  document.getElementById('screen-login').classList.remove('hidden');
+  const login = document.getElementById('screen-login');
+  // enterApp (app.js) apaga a tela de login ao entrar; ao voltar (ex.: depois de sair), ela reaparece inteira.
+  login.style.opacity = '';
+  login.style.pointerEvents = '';
+  login.classList.remove('hidden');
 }
