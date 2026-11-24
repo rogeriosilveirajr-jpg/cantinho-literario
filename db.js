@@ -497,6 +497,8 @@ function renderMyProfile() {
   const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.innerHTML = val || ''; };
   set('.profile-name', APP_USER.displayName || 'Usuário');
   if (typeof setFounderBadge === 'function') setFounderBadge('my-founder-badge', APP_USER.createdAt);   // welcome.js
+  if (typeof loadReputation === 'function') loadReputation(APP_USER.uid, 'my-reputation');            // local.js
+  if (typeof renderStreak === 'function') renderStreak();                                              // daily.js
   set('.profile-handle', '@' + (APP_USER.handle || APP_USER.uid.slice(0,8)));
   set('.profile-top-handle', '@' + (APP_USER.handle || APP_USER.uid.slice(0,8)));
   
@@ -1455,6 +1457,7 @@ async function openUserProfile(userId) {
     const u = docSnap.data();
     document.getElementById('up-name').textContent = u.displayName || 'Leitor';
     if (typeof setFounderBadge === 'function') setFounderBadge('up-founder-badge', u.createdAt);   // welcome.js
+    if (typeof loadReputation === 'function') loadReputation(userId, 'up-reputation');              // local.js
     document.getElementById('up-handle').textContent = '@' + (u.handle || 'leitor');
     document.getElementById('up-bio').textContent = u.bio || '';
     

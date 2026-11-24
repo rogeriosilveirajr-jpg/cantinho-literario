@@ -25,6 +25,7 @@ function enterApp() {
   if (typeof renderMyProfile === 'function') renderMyProfile();    // db.js — foto, nome, contadores
   if (typeof listenMyLibrary === 'function') listenMyLibrary(); // db.js - listener de estantes de livros
   if (typeof loadChats === 'function') loadChats();             // db.js — carregar lista de conversas
+  if (typeof loadReadingLog === 'function') loadReadingLog();    // daily.js — sequência de leitura
   if (typeof clearPendingInvite === 'function') clearPendingInvite(); // welcome.js — convite já usado (ou de quem já tinha conta)
   if (typeof maybeOpenWelcome === 'function') maybeOpenWelcome(); // welcome.js — boas-vindas da conta nova
 }
@@ -53,6 +54,7 @@ const fab = document.getElementById('fab');
   if (name === 'notif') loadNotifications();
   if (name === 'chats' && typeof loadChats === 'function') loadChats();
   if (name === 'clubs') loadClubs();
+  if (name === 'search' && typeof loadExplore === 'function') loadExplore();   // lists.js
 
   const titles = { home:'Cantinho Literário', search:'Explorar', notif:'Notificações', profile:'Meu Perfil', settings:'Configurações', clubs:'Clubes do livro' };
   document.title = (titles[name] || 'Cantinho') + ' — Cantinho Literário';
@@ -714,6 +716,7 @@ function switchFeedTab(tab) {
   
   const near = document.getElementById('trade-near-wrap');
   if (near) near.hidden = tab !== 'trade';
+  if (typeof loadTradeCities === 'function') loadTradeCities();   // local.js — atalhos por cidade
 
   // Reload feed with new filter
   if (typeof loadFeed === 'function') {

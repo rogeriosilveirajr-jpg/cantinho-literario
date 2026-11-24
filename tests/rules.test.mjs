@@ -405,3 +405,122 @@ test('convite: quem convidou consegue contar quantos entraram pelo link', async 
   const snap = await assertSucceeds(getDocs(query(collection(as(BIA), 'users'), where('invitedBy', '==', BIA))));
   assert.equal(snap.size, 1);
 });
+
+// ---------- item 2: registro de leitura do dia ----------
+test('registro de leitura: só a dona grava e lê, com id de data e páginas de 0 a 5000 (valor-limite)', async () => {
+  const log = (uid, owner, id, data) => setDoc(doc(as(uid), 'users', owner, 'readingLog', id), data);
+  await assertSucceeds(log(BIA, BIA, '2026-11-24', { pages: 30, updatedAt: serverTimestamp() }));
+  await assertSucceeds(log(BIA, BIA, '2026-11-25', { pages: 5000 }));
+  await assertFails(log(BIA, BIA, '2026-11-26', { pages: 5001 }));
+  await assertFails(log(BIA, BIA, '2026-11-27', { pages: -1 }));
+  await assertFails(log(BIA, BIA, '2026-11-28', { pages: 3, extra: 'x' }));
+  await assertFails(log(BIA, BIA, 'ontem', { pages: 3 }));
+  await assertFails(log(CAIO, BIA, '2026-11-24', { pages: 1 }));
+  await assertFails(getDocs(collection(as(CAIO), 'users', BIA, 'readingLog')));
+  await assertSucceeds(getDocs(collection(as(BIA), 'users', BIA, 'readingLog')));
+});
+
+// ---------- item 3: cronograma, votação e encontro dos clubes ----------
+test('clube: só o dono define cronograma, votação e encontro; formatos inválidos falham', async () => {
+  await assertSucceeds(createClubAs(BIA, C1));
+  const club = uid => doc(as(uid), 'clubs', C1);
+  const when = new Date(2030, 0, 1);
+  await assertSucceeds(updateDoc(club(BIA), { schedule: [{ label: 'Cap. 1–5', due: '2030-01-01' }] }));
+  await assertSucceeds(updateDoc(club(BIA), { pollId: 'p1', pollOpen: true, pollOptions: [{ id: 'a', title: 'A', author: 'X', coverUrl: '' }, { id: 'b', title: 'B', author: 'Y', coverUrl: '' }] }));
+  await assertSucceeds(updateDoc(club(BIA), { nextMeeting: { when, place: 'Biblioteca', link: 'https://meet.example/x' } }));
+  await assertSucceeds(updateDoc(club(BIA), { nextMeeting: null }));
+  await assertFails(updateDoc(club(CAIO), { schedule: [] }));
+  await assertFails(updateDoc(club(BIA), { schedule: Array.from({ length: 13 }, () => ({ label: 'x', due: '2030-01-01' })) }));
+  await assertFails(updateDoc(club(BIA), { pollOptions: Array.from({ length: 5 }, (_, i) => ({ id: `b${i}` })) }));
+  await assertFails(updateDoc(club(BIA), { nextMeeting: { when, place: 'x', link: 'javascript:alert(1)' } }));
+  await assertFails(updateDoc(club(BIA), { nextMeeting: { when: 'amanhã', place: 'x', link: '' } }));
+  await assertFails(updateDoc(club(BIA), { nextMeeting: { when, place: 'x'.repeat(121), link: '' } }));
+});
+
+test('voto: só membro, na votação aberta, numa opção que existe; pode trocar o voto', async () => {
+  await assertSucceeds(createClubAs(BIA, C1, { pollId: 'p1', pollOpen: true, pollOptions: [{ id: 'a' }, { id: 'b' }] }));
+  const vote = (uid, data) => setDoc(doc(as(uid), 'clubs', C1, 'votes', uid), data);
+  await assertFails(vote(CAIO, { option: 0, pollId: 'p1' }));           // ainda não é membro
+  await assertSucceeds(joinAs(CAIO, C1, 1));
+  await assertSucceeds(vote(CAIO, { option: 1, pollId: 'p1' }));
+  await assertSucceeds(vote(CAIO, { option: 0, pollId: 'p1' }));         // trocou o voto
+  await assertFails(vote(CAIO, { option: 2, pollId: 'p1' }));            // opção inexistente
+  await assertFails(vote(CAIO, { option: 0, pollId: 'velha' }));         // votação antiga
+  await assertFails(setDoc(doc(as(CAIO), 'clubs', C1, 'votes', BIA), { option: 0, pollId: 'p1' }));   // votar por outra pessoa
+  await assertSucceeds(getDocs(collection(as(CAIO), 'clubs', C1, 'votes')));
+  await assertSucceeds(updateDoc(doc(as(BIA), 'clubs', C1), { pollOpen: false }));
+  await assertFails(vote(CAIO, { option: 1, pollId: 'p1' }));            // votação encerrada
+});
+
+test('conversa do clube por etapa: milestone de 0 a 11 (valor-limite)', async () => {
+  await assertSucceeds(createClubAs(BIA, C1));
+  const msg = milestone => addDoc(collection(as(BIA), 'clubs', C1, 'messages'), { senderId: BIA, senderName: 'Bia', text: 'oi', milestone, createdAt: serverTimestamp() });
+  await assertSucceeds(msg(0));
+  await assertSucceeds(msg(11));
+  await assertFails(msg(12));
+  await assertFails(msg(-1));
+  await assertFails(msg('1'));
+});
+
+// ---------- item 4: pontos de leitura ----------
+const spot = (uid, extra = {}) => ({ name: 'Sebo do Zé', kind: 'sebo', city: 'Joinville', cityKey: 'joinville', address: 'Rua A, 10', authorId: uid, authorName: 'X', createdAt: serverTimestamp(), ...extra });
+
+test('ponto de leitura: qualquer leitor sugere; dados inválidos falham; só o autor ou a moderação apaga', async () => {
+  const [S1, S2] = ['pontoUm', 'pontoDois'].map(autoId);
+  await assertSucceeds(setDoc(doc(as(BIA), 'readingSpots', S1), spot(BIA)));
+  await assertFails(setDoc(doc(as(BIA), 'readingSpots', 'id-escolhido'), spot(BIA)));
+  await assertFails(setDoc(doc(as(BIA), 'readingSpots', S2), spot(CAIO)));
+  await assertFails(setDoc(doc(as(BIA), 'readingSpots', S2), spot(BIA, { kind: 'boate' })));
+  await assertFails(setDoc(doc(as(BIA), 'readingSpots', S2), spot(BIA, { name: 'ab' })));
+  await assertFails(setDoc(doc(as(BIA), 'readingSpots', S2), spot(BIA, { address: 'x'.repeat(151) })));
+  await assertFails(setDoc(doc(as(BIA), 'readingSpots', S2), spot(BIA, { extra: 1 })));
+  await assertSucceeds(getDocs(query(collection(as(CAIO), 'readingSpots'), where('cityKey', '==', 'joinville'))));
+  await assertFails(updateDoc(doc(as(BIA), 'readingSpots', S1), { name: 'Outro nome' }));
+  await assertFails(deleteDoc(doc(as(CAIO), 'readingSpots', S1)));
+  await assertSucceeds(deleteDoc(doc(as(MOD), 'readingSpots', S1)));
+});
+
+// ---------- item 5: listas de leitura ----------
+const list = (uid, extra = {}) => ({ title: 'Ler numa tarde', description: '', books: [], ownerId: uid, ownerName: 'X', likesCount: 0, createdAt: serverTimestamp(), ...extra });
+const L1 = autoId('listaUm');
+
+function likeAs(uid, listId, delta = 1) {
+  const db = as(uid);
+  const batch = writeBatch(db);
+  if (delta > 0) batch.set(doc(db, 'lists', listId, 'likes', uid), { uid });
+  else batch.delete(doc(db, 'lists', listId, 'likes', uid));
+  batch.update(doc(db, 'lists', listId), { likesCount: increment(delta) });
+  return batch.commit();
+}
+
+test('lista: a dona cria e edita; título, livros e contador são validados (valor-limite)', async () => {
+  await assertSucceeds(setDoc(doc(as(BIA), 'lists', L1), list(BIA)));
+  await assertFails(setDoc(doc(as(BIA), 'lists', autoId('listaDois')), list(BIA, { title: 'ab' })));
+  await assertFails(setDoc(doc(as(BIA), 'lists', autoId('listaTres')), list(BIA, { likesCount: 10 })));
+  await assertFails(setDoc(doc(as(BIA), 'lists', autoId('listaQuatro')), list(CAIO)));
+  const books = n => Array.from({ length: n }, (_, i) => ({ id: `b${i}`, title: 'T', author: 'A', coverUrl: '' }));
+  await assertSucceeds(updateDoc(doc(as(BIA), 'lists', L1), { books: books(50) }));
+  await assertFails(updateDoc(doc(as(BIA), 'lists', L1), { books: books(51) }));
+  await assertFails(updateDoc(doc(as(CAIO), 'lists', L1), { title: 'Roubada' }));
+  await assertFails(updateDoc(doc(as(BIA), 'lists', L1), { ownerId: CAIO }));
+});
+
+test('curtir lista mexe no contador de 1 em 1, sempre junto com a curtida', async () => {
+  await assertSucceeds(setDoc(doc(as(BIA), 'lists', L1), list(BIA)));
+  await assertSucceeds(likeAs(CAIO, L1, 1));
+  await assertFails(likeAs(CAIO, L1, 1));                                         // já curtiu
+  await assertFails(updateDoc(doc(as(ANA), 'lists', L1), { likesCount: increment(1) }));   // contador sem curtir
+  await assertFails(setDoc(doc(as(ANA), 'lists', L1, 'likes', CAIO), { uid: CAIO })); // curtir por outra pessoa
+  await assertSucceeds(likeAs(CAIO, L1, -1));
+  await assertFails(deleteDoc(doc(as(CAIO), 'lists', L1)));
+  await assertSucceeds(deleteDoc(doc(as(BIA), 'lists', L1)));
+});
+
+test('itens malformados em cronograma, votação e lista são recusados (protege a tela de todos)', async () => {
+  await assertSucceeds(createClubAs(BIA, C1));
+  await assertFails(updateDoc(doc(as(BIA), 'clubs', C1), { schedule: [null] }));
+  await assertFails(updateDoc(doc(as(BIA), 'clubs', C1), { pollOptions: [5, 6] }));
+  await assertSucceeds(setDoc(doc(as(BIA), 'lists', L1), list(BIA)));
+  await assertFails(updateDoc(doc(as(BIA), 'lists', L1), { books: [null] }));
+  await assertFails(setDoc(doc(as(BIA), 'lists', autoId('listaExtra')), list(BIA, { lixo: 'x'.repeat(1000) })));
+});

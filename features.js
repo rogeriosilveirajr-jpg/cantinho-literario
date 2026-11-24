@@ -107,6 +107,8 @@ function onBookPicked(book, mode) {
   if (mode === 'post') setComposeBook(picked);
   if (mode === 'club') setClubBook(picked);
   if (mode === 'welcome') setWelcomeReading(picked);   // welcome.js
+  if (mode === 'poll') addPollPick(picked);            // clubs-plus.js
+  if (mode === 'list') addBookToCurrentList(picked);   // lists.js
 }
 
 function setComposeBook(book) {
@@ -279,6 +281,7 @@ function toggleTradeNear(input) {
 
 /** Usado pelo feed: o post de troca passa no filtro de cidade? */
 function passesTradeFilter(d) {
+  if (typeof passesTradeCity === 'function' && !passesTradeCity(d)) return false;   // local.js — atalho de cidade
   if (!TRADE_NEAR_ONLY || !APP_USER) return true;
   return CL.sameCity(d.location, APP_USER.city);
 }
@@ -334,6 +337,7 @@ async function saveReadingProgress() {
   try {
     await db.collection('users').doc(APP_USER.uid).collection('library').doc(currentBookOptions.id)
       .update({ currentPage: p.current, totalPages: p.total });
+    if (typeof logPagesToday === 'function') logPagesToday(CLC.pagesDelta(currentBookOptions.currentPage, p.current));   // daily.js
     currentBookOptions = { ...currentBookOptions, currentPage: p.current, totalPages: p.total };
     showToast(p.percent === 100 ? 'Terminou! Mova para Lidos 🎉' : `Progresso salvo: ${p.percent}% 📖`);
     closeSheet('sh-book-options');
@@ -396,7 +400,10 @@ async function openWrapped() {
       ${r.busiestMonth ? `<p class="wr-line">Mês mais lido: <strong>${r.busiestMonth}</strong></p>` : ''}
       ${r.booksRead === 0 ? '<p class="wr-line">Marque livros como Lidos para montar sua retrospectiva 📖</p>' : ''}
     </div>
-    <button class="bp-btn" onclick="shareWrapped()">Compartilhar</button>`;
+    <div class="club-row-btns">
+      <button class="bp-btn" onclick="shareWrapped()">Compartilhar</button>
+      <button class="bp-btn bp-btn-ghost" onclick="downloadWrappedImage()">🖼️ Baixar imagem</button>
+    </div>`;
   openSheet('sh-wrapped');
   return r;
 }
@@ -524,11 +531,14 @@ function renderClub() {
       ${owner ? '<button class="bp-btn bp-btn-ghost" onclick="openBookPicker(\'club\')">Escolher livro do mês</button>' : ''}
     </div>
     ${owner ? '' : `<button class="bp-btn ${member ? 'bp-btn-ghost' : ''}" id="club-join-btn" onclick="${member ? 'leaveClub()' : 'joinClub()'}">${member ? 'Sair do clube' : 'Entrar no clube'}</button>`}
+    <div id="club-extras"></div>
     <h4 class="bp-section">Conversa do clube</h4>
+    <div id="club-chat-tabs" class="club-chat-tabs" role="tablist" aria-label="Etapas da conversa"></div>
     <div class="club-msgs" id="club-msgs">${member ? '' : '<p class="muted-small">Entre no clube para ver e participar da conversa.</p>'}</div>
     ${member ? `<div class="club-send">
       <input id="club-msg-input" maxlength="${CLUB_MESSAGE_MAX}" placeholder="Escreva para o clube..." onkeydown="if(event.key==='Enter') sendClubMessage()"/>
       <button class="bp-btn" onclick="sendClubMessage()">Enviar</button></div>` : ''}`;
+  if (typeof renderClubExtras === 'function') renderClubExtras(c);   // clubs-plus.js — cronograma, votação, encontro
   stopClubMessages();
   if (member) listenClubMessages(c.id);
 }
@@ -550,7 +560,10 @@ async function changeMembership(join, club = CURRENT_CLUB) {
   try {
     const batch = db.batch();
     if (join) batch.set(ref.collection('members').doc(APP_USER.uid), memberDoc());
-    else batch.delete(ref.collection('members').doc(APP_USER.uid));
+    else {
+      batch.delete(ref.collection('members').doc(APP_USER.uid));
+      batch.delete(ref.collection('votes').doc(APP_USER.uid));   // quem sai não conta mais na votação
+    }
     batch.update(ref, { membersCount: inc });
     batch.update(db.collection('users').doc(APP_USER.uid), {
       clubIds: join ? firebase.firestore.FieldValue.arrayUnion(c.id) : firebase.firestore.FieldValue.arrayRemove(c.id),
@@ -587,12 +600,20 @@ async function setClubBook(book) {
 }
 
 function listenClubMessages(clubId) {
-  CLUB_MSGS_UNSUB = db.collection('clubs').doc(clubId).collection('messages')
-    .orderBy('createdAt', 'desc').limit(CLUB_MESSAGES_LIMIT)
+  const messages = db.collection('clubs').doc(clubId).collection('messages');
+  const q = typeof clubMessagesQuery === 'function'   // clubs-plus.js — conversa por etapa
+    ? clubMessagesQuery(messages) : messages.orderBy('createdAt', 'desc').limit(CLUB_MESSAGES_LIMIT);
+  CLUB_MSGS_UNSUB = q
     .onSnapshot(snap => {
       const box = document.getElementById('club-msgs');
       if (!box) return;
-      const msgs = snap.docs.map(d => d.data()).reverse();
+      // Conversa por etapa do cronograma (clubs-plus.js): só as mensagens da etapa aberta.
+      // Mensagem recém-enviada ainda sem hora do servidor fica por último.
+      const at = m => CL.toMillis(m.createdAt) || Number.MAX_SAFE_INTEGER;
+      const msgs = snap.docs.map(d => d.data())
+        .filter(m => typeof clubMessageVisible !== 'function' || clubMessageVisible(m))
+        .sort((a, b) => at(a) - at(b))
+        .slice(-CLUB_MESSAGES_LIMIT);
       box.innerHTML = msgs.length
         ? msgs.map(m => `<div class="club-msg ${APP_USER && m.senderId === APP_USER.uid ? 'mine' : ''}">
             <span class="club-msg-name">${escHtml(m.senderName || 'Leitor')}</span>${escHtml(m.text)}</div>`).join('')
@@ -613,6 +634,7 @@ async function sendClubMessage() {
   try {
     await db.collection('clubs').doc(CURRENT_CLUB.id).collection('messages').add({
       senderId: APP_USER.uid, senderName: APP_USER.displayName || '', text: text.slice(0, CLUB_MESSAGE_MAX),
+      ...(typeof clubMessageExtras === 'function' ? clubMessageExtras() : {}),   // clubs-plus.js — etapa
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
   } catch (err) {

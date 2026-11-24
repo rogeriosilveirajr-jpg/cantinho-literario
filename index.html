@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="features.css"/>
   <link rel="stylesheet" href="welcome.css"/>
+  <link rel="stylesheet" href="community.css"/>
   <link rel="icon" href="favicon.ico" type="image/x-icon"/>
 </head>
 <body>
@@ -148,6 +149,7 @@
       <label class="trade-near" id="trade-near-wrap" hidden>
         <input type="checkbox" id="trade-near" onchange="toggleTradeNear(this)"/> 📍 Só da minha cidade
       </label>
+      <div id="trade-cities" class="trade-cities" aria-label="Cidades com trocas abertas" hidden></div>
 
       <div id="view-feed" class="feed-list" aria-live="polite" aria-busy="false">
         <!-- Feed dinâmico renderizado aqui -->
@@ -177,8 +179,23 @@
       </div>
       
       <div id="search-default-view">
-        <div style="padding:8px 14px 6px;font-size:.78rem;font-weight:600;color:#6B7F70;text-transform:uppercase;letter-spacing:.05em;">Em destaque</div>
-        <div class="books-grid"></div>
+        <!-- Para você, listas de leitura e pontos de leitura (lists.js, local.js) -->
+        <section class="ex-section" id="explore-for-you" aria-labelledby="ex-fy-ttl">
+          <h2 class="ex-title" id="ex-fy-ttl">✨ Para você</h2>
+          <div id="for-you-list" class="fy-list"></div>
+        </section>
+        <section class="ex-section" id="explore-lists" aria-labelledby="ex-lists-ttl">
+          <div class="ex-head"><h2 class="ex-title" id="ex-lists-ttl">📚 Listas de leitura</h2>
+            <button class="ex-btn" onclick="openNewList()">＋ Criar lista</button></div>
+          <div id="lists-list" class="lists-grid"></div>
+        </section>
+        <section class="ex-section" id="explore-spots" aria-labelledby="ex-spots-ttl">
+          <div class="ex-head"><h2 class="ex-title" id="ex-spots-ttl">📍 Pontos de leitura</h2>
+            <button class="ex-btn" onclick="openNewSpot()">＋ Sugerir lugar</button></div>
+          <input id="spots-city" class="ep-input spots-city" type="search" placeholder="Filtrar por cidade e apertar Enter"
+            aria-label="Filtrar pontos de leitura por cidade" onkeydown="if (event.key === 'Enter') loadSpots(this.value)"/>
+          <div id="spots-list" class="spots-list"></div>
+        </section>
       </div>
       
       <div id="search-results-view" style="display:none; padding:10px 14px; display:flex; flex-direction:column; gap:12px;">
@@ -233,6 +250,7 @@
           <svg class="profile-lock" id="my-profile-lock" style="display:none;" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" title="Perfil privado"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
         <span class="profile-handle" id="my-profile-handle"></span>
+        <p class="reputation" id="my-reputation" hidden></p>
         <p class="profile-bio" id="my-profile-bio"></p>
         <p class="profile-now" id="my-profile-now"></p>
         
@@ -257,6 +275,12 @@
       </div>
 
       <!-- Conquistas e retrospectiva (features.js) -->
+      <!-- Sequência de leitura (daily.js) -->
+      <div class="streak-card" id="streak-card">
+        <div class="streak-txt"><strong id="streak-label">Comece sua sequência hoje 📖</strong><span id="streak-pages" class="streak-pages"></span></div>
+        <button class="bp-btn" onclick="openReadingLog()">📖 Registrar leitura de hoje</button>
+      </div>
+
       <div id="achievements" class="ach-wrap"></div>
       <button class="btn-wrapped" onclick="openWrapped()">✨ Minha retrospectiva do ano</button>
       <button class="btn-invite" onclick="openInvite()">💌 Convidar amigos</button>
@@ -473,6 +497,7 @@
           <span id="up-founder-badge" class="founder-badge" title="Chegou ao Cantinho antes de março de 2027" hidden>🌱 Fundador</span>
         </div>
         <span class="profile-handle" id="up-handle"></span>
+        <p class="reputation" id="up-reputation" hidden></p>
         <p class="profile-bio" id="up-bio"></p>
         
         <div id="up-btn-row" style="margin-top:12px; margin-bottom:20px; display:flex; gap:10px; justify-content:center;"></div>
@@ -596,14 +621,19 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <!-- App scripts -->
-<script src="lib/logic.js?v=6"></script>
-<script src="lib/welcome.js?v=6"></script>
-<script src="firebase-config.js?v=6"></script>
-<script src="auth.js?v=6"></script>
-<script src="db.js?v=6"></script>
-<script src="app.js?v=6"></script>
-<script src="features.js?v=6"></script>
-<script src="welcome.js?v=6"></script>
+<script src="lib/logic.js?v=7"></script>
+<script src="lib/welcome.js?v=7"></script>
+<script src="lib/community.js?v=7"></script>
+<script src="firebase-config.js?v=7"></script>
+<script src="auth.js?v=7"></script>
+<script src="db.js?v=7"></script>
+<script src="app.js?v=7"></script>
+<script src="features.js?v=7"></script>
+<script src="welcome.js?v=7"></script>
+<script src="daily.js?v=7"></script>
+<script src="clubs-plus.js?v=7"></script>
+<script src="local.js?v=7"></script>
+<script src="lists.js?v=7"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -702,6 +732,127 @@
 </div>
 
 <!-- Add Book Search -->
+<!-- Itens 2 a 5 (daily.js, clubs-plus.js, local.js, lists.js) -->
+<div id="sh-log" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-log-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-log')">Fechar</button>
+      <h2 id="sh-log-ttl" class="sh-title">Leitura de hoje 📖</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body cm-body">
+      <p class="muted-small">Em que página você está? As páginas lidas contam para a sua sequência 🔥</p>
+      <div id="log-body" class="log-body"></div>
+    </div>
+  </div>
+</div>
+<div id="sh-schedule" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-schedule-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-schedule')">Fechar</button>
+      <h2 id="sh-schedule-ttl" class="sh-title">Cronograma 🗓️</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body cm-body">
+      <p class="muted-small">Cada etapa vira uma conversa separada no clube, para ninguém levar spoiler.</p>
+      <div id="schedule-rows" class="sched-rows"></div>
+      <div class="club-row-btns">
+        <button class="bp-btn bp-btn-ghost" onclick="addScheduleRow()">+ Etapa</button>
+        <button class="bp-btn" onclick="saveSchedule()">Salvar cronograma</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="sh-poll" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-poll-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-poll')">Fechar</button>
+      <h2 id="sh-poll-ttl" class="sh-title">Nova votação 🗳️</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body cm-body">
+      <div id="poll-picks" class="poll-picks"></div>
+      <div class="club-row-btns">
+        <button class="bp-btn bp-btn-ghost" onclick="openBookPicker('poll')">＋ Adicionar livro</button>
+        <button class="bp-btn" onclick="startPoll()">Começar votação</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="sh-meeting" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-meeting-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-meeting')">Fechar</button>
+      <h2 id="sh-meeting-ttl" class="sh-title">Encontro do clube 📅</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body cm-body">
+      <label class="ep-label" for="meet-when">Data e hora</label>
+      <input id="meet-when" type="datetime-local" class="ep-input"/>
+      <label class="ep-label" for="meet-place">Lugar (opcional se tiver link)</label>
+      <input id="meet-place" class="ep-input" maxlength="120" placeholder="Ex.: Biblioteca Central, sala 2"/>
+      <label class="ep-label" for="meet-link">Link do encontro online (opcional)</label>
+      <input id="meet-link" class="ep-input" maxlength="300" placeholder="https://..." inputmode="url"/>
+      <button class="bp-btn cm-save" onclick="saveMeeting()">Salvar encontro</button>
+    </div>
+  </div>
+</div>
+<div id="sh-new-spot" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-new-spot-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-new-spot')">Fechar</button>
+      <h2 id="sh-new-spot-ttl" class="sh-title">Sugerir um lugar 📍</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body cm-body">
+      <label class="ep-label" for="spot-name">Nome</label>
+      <input id="spot-name" class="ep-input" maxlength="80" placeholder="Ex.: Sebo do Zé"/>
+      <label class="ep-label" for="spot-kind">Tipo</label>
+      <select id="spot-kind" class="ep-input"><option value="sebo">📚 Sebo</option><option value="biblioteca">🏛️ Biblioteca</option><option value="geladeirinha">🧊 Geladeirinha de livros</option><option value="livraria">🛍️ Livraria</option><option value="cafe">☕ Café literário</option></select>
+      <label class="ep-label" for="spot-city">Cidade</label>
+      <input id="spot-city" class="ep-input" maxlength="60" placeholder="Ex.: Joinville"/>
+      <label class="ep-label" for="spot-address">Endereço (opcional)</label>
+      <input id="spot-address" class="ep-input" maxlength="150" placeholder="Rua, número, bairro"/>
+      <button class="bp-btn cm-save" onclick="saveSpot()">Salvar lugar</button>
+    </div>
+  </div>
+</div>
+<div id="sh-new-list" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-new-list-ttl">
+  <div class="sheet-box">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-new-list')">Fechar</button>
+      <h2 id="sh-new-list-ttl" class="sh-title">Nova lista 📚</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body cm-body">
+      <label class="ep-label" for="list-title">Título</label>
+      <input id="list-title" class="ep-input" maxlength="80" placeholder="Ex.: Para ler numa tarde"/>
+      <label class="ep-label" for="list-desc">Descrição (opcional)</label>
+      <textarea id="list-desc" class="ep-input" maxlength="300" rows="3" placeholder="Do que se trata esta lista?"></textarea>
+      <button class="bp-btn cm-save" onclick="createList()">Criar lista</button>
+    </div>
+  </div>
+</div>
+<div id="sh-list" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-list-ttl">
+  <div class="sheet-box sh-tall">
+    <div class="sh-handle"></div>
+    <div class="sh-header">
+      <button class="sh-cancel" onclick="closeSheet('sh-list')">Fechar</button>
+      <h2 id="sh-list-ttl" class="sh-title">Lista</h2>
+      <span class="sh-action" aria-hidden="true"></span>
+    </div>
+    <div class="sh-body cm-body">
+      <div id="list-body" class="list-body"></div>
+    </div>
+  </div>
+</div>
+
 <div id="sh-add-book" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sh-add-book-ttl">
   <div class="sheet-box sh-tall">
     <div class="sh-handle"></div>
