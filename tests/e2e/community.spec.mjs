@@ -55,6 +55,13 @@ test('registrar a leitura do dia atualiza a página do livro, a sequência e as 
   await page.getByLabel('Página atual de Duna').fill('55');
   await page.getByRole('button', { name: 'Salvar leitura' }).click();
   await expect(page.locator('#streak-pages')).toContainText('55 páginas');
+
+  // depois de recarregar, a sequência vem do banco (regressão: a busca não pode exigir índice extra)
+  await page.reload();
+  await expect(page.locator('#app')).toBeVisible();
+  await goTo(page, 'profile');
+  await expect(page.locator('#streak-label')).toHaveText('🔥 1 dia seguido');
+  await expect(page.locator('#streak-pages')).toContainText('55 páginas');
 });
 
 test('a retrospectiva baixa uma imagem PNG pronta para postar', async ({ page }) => {

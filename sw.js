@@ -1,7 +1,7 @@
 // Service worker do Cantinho Literário.
 // Estratégia "rede primeiro": sempre busca a versão nova do site e só usa a cópia
 // guardada quando a pessoa está sem internet. Assim as atualizações chegam a todos.
-const CACHE_NAME = 'cantinho-cache-v11';
+const CACHE_NAME = 'cantinho-cache-v12';
 const APP_SHELL = ['./', './index.html', './styles.css', './features.css', './welcome.css', './community.css', './lib/logic.js', './lib/welcome.js', './lib/community.js', './welcome.js',
   './daily.js', './clubs-plus.js', './local.js', './lists.js', './app.js', './db.js', './auth.js', './features.js', './firebase-config.js'];
 

@@ -24,8 +24,11 @@ function readingLogRef() {
 async function loadReadingLog() {
   if (!APP_USER || !FIREBASE_CONFIGURED) return;
   try {
+    // Busca pelos dias a partir de N dias atrás, em ordem crescente de id: usa o índice padrão
+    // (ordenar o id de forma decrescente exigiria um índice extra em produção).
+    const since = CLC.dayKey(new Date(Date.now() - READING_LOG_DAYS * 86400000));
     const snap = await readingLogRef()
-      .orderBy(firebase.firestore.FieldPath.documentId(), 'desc').limit(READING_LOG_DAYS).get();
+      .where(firebase.firestore.FieldPath.documentId(), '>=', since).get();
     READING_LOGS = snap.docs.map(d => ({ day: d.id, pages: Number(d.data().pages) || 0 }));
   } catch (err) {
     console.error('Erro ao carregar o registro de leitura:', err);
